@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MG ASTROLOGY - Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -122,6 +125,7 @@
         }
         .message { max-width: 85%; padding: 10px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
         .msg-right { background-color: #d9fdd3; color: #333; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .msg-left { background-color: white; color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
 
         /* QR कोड की फोटो को सुंदर दिखाने के लिए स्टाइल */
         .qr-image-style {
@@ -181,7 +185,7 @@
 
         <div class="customer-list" id="customerListWindow">
             <div class="no-customer-msg" id="emptyNotice">
-                💬 अभी कोई नया संदेश नहीं है।<br>जब कोई ग्राहक लॉगिन करेगा, उसकी चैट यहाँ दिखाई देगी।
+                💬 अभी कोई नया संदेश नहीं है।<br>जब कोई ग्राहक मैसेज भेजेगा, उसकी चैट यहाँ दिखाई देगी।
             </div>
         </div>
 
@@ -206,14 +210,93 @@
     </div>
 
     <script>
+        // आपकी भेजी हुई फायरबेस की असली चाबी यहाँ सेट कर दी गई है
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYCVE3YIwhu1kCA0ITLiOr-BXGQeA8cB8",
+            authDomain: "mg-astrology.firebaseapp.com",
+            projectId: "mg-astrology",
+            storageBucket: "mg-astrology.firebasestorage.app",
+            messagingSenderId: "261563877993",
+            appId: "1:261563877993:web:b0ce3be4f40521a78ef0f8",
+            measurementId: "G-9BXEP9NB0C",
+            databaseURL: "https://mg-astrology-default-rtdb.firebaseio.com/"
+        };
+
+        // फायरबेस को शुरू किया
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
         var selectedCustomerId = null;
         var selectedCustomerName = "";
+
+        // 🚀 लाइव डेटाबेस से ग्राहकों के मैसेज खींचने का सिस्टम
+        database.ref('chats').on('value', (snapshot) => {
+            const customerListWindow = document.getElementById('customerListWindow');
+            const emptyNotice = document.getElementById('emptyNotice');
+            
+            // पुरानी लिस्ट साफ करें ताकि डबल न दिखे
+            customerListWindow.innerHTML = '';
+            
+            if (snapshot.exists()) {
+                if(emptyNotice) emptyNotice.style.display = 'none';
+                
+                // फिलहाल हम सिंगल रूम चैट बना रहे हैं, इसलिए 'कस्टमर' नाम का एक ही मुख्य बॉक्स दिखेगा
+                var item = document.createElement('div');
+                item.className = "customer-item";
+                item.id = "customer_1";
+                item.innerHTML = '<strong>🔮 लाइव कस्टमर (Live Chat)</strong><span style="font-size:13px; color:#667781;">क्लिक करके नया मैसेज देखें</span>';
+                
+                item.onclick = function() {
+                    selectCustomer('customer_1', 'कस्टमर');
+                    openCustomerChat('कस्टमर');
+                };
+                
+                customerListWindow.appendChild(item);
+
+                // अगर चैट बॉक्स खुला हुआ है, तो अंदर के मैसेज भी तुरंत अपडेट करें
+                if(selectedCustomerId === 'customer_1') {
+                    loadLiveMessages(snapshot.val());
+                }
+            } else {
+                customerListWindow.appendChild(emptyNotice);
+                if(emptyNotice) emptyNotice.style.display = 'block';
+            }
+        });
+
+        // मैसेज को स्क्रीन पर रेंडर (दिखाने) करने का फंक्शन
+        function loadLiveMessages(messagesData) {
+            var chatWindow = document.getElementById('adminChatWindow');
+            chatWindow.innerHTML = ''; // पुराना डेटा साफ करें
+
+            Object.keys(messagesData).forEach((key) => {
+                var msg = messagesData[key];
+                var newMsg = document.createElement('div');
+                
+                // अगर मैसेज कस्टमर का है तो लेफ्ट में, एडमिन का है तो राइट में दिखेगा
+                if(msg.sender === "admin") {
+                    newMsg.className = "message msg-right";
+                    if(msg.text.includes('<img')) {
+                        newMsg.innerHTML = msg.text;
+                    } else {
+                        newMsg.innerText = msg.text;
+                    }
+                } else {
+                    newMsg.className = "message msg-left";
+                    newMsg.innerText = msg.text;
+                }
+                
+                chatWindow.appendChild(newMsg);
+            });
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
 
         function selectCustomer(id, name) {
             var items = document.getElementsByClassName('customer-item');
             for(var i=0; i<items.length; i++) { items[i].classList.remove('selected'); }
 
-            document.getElementById(id).classList.add('selected');
+            var currentItem = document.getElementById(id);
+            if(currentItem) currentItem.classList.add('selected');
+            
             selectedCustomerId = id;
             selectedCustomerName = name;
 
@@ -225,9 +308,10 @@
             if(selectedCustomerId) {
                 var confirmBlock = confirm("क्या आप सचमुच " + selectedCustomerName + " को हमेशा के लिए ब्लॉक करना चाहते हैं?");
                 if(confirmBlock) {
-                    document.getElementById(selectedCustomerId).remove();
-                    alert(selectedCustomerName + " ब्लॉक हो गया!");
-                    resetAdminHeader();
+                    // डेटाबेस से पूरी चैट साफ कर दें
+                    database.ref('chats').remove();
+                    alert(selectedCustomerName + " की चैट डिलीट और ब्लॉक हो गई!");
+                    closeCustomerChat();
                 }
             }
         }
@@ -241,6 +325,13 @@
         function openCustomerChat(name) {
             document.getElementById('chattingWithTitle').innerText = name;
             document.getElementById('fullChatWindow').style.display = 'flex';
+            
+            // खोलते ही डेटाबेस से एक बार ताज़ा डेटा लोड करें
+            database.ref('chats').once('value', (snapshot) => {
+                if(snapshot.exists()) {
+                    loadLiveMessages(snapshot.val());
+                }
+            });
         }
 
         function closeCustomerChat() {
@@ -248,37 +339,38 @@
             resetAdminHeader();
         }
 
-        // 🚀 मुकुंद जी, यहाँ आपका असली QR कोड और कड़क चेतावनी दोनों एक साथ जुड़ गए हैं
+        // 🚀 भुगतान चेतावनी संदेश अब सीधे फायरबेस डेटाबेस में जाएगा
         function sendPaymentWarning() {
-            var chatWindow = document.getElementById('adminChatWindow');
-            var newMsg = document.createElement('div');
-            newMsg.className = "message msg-right";
-            
-            // चेतावनी टेक्स्ट और साथ में आपका भेजा हुआ डायरेक्ट इमेज लिंक
             var warningText = '<img src="https://i.ibb.co/SDBfnhQy/Screenshot-20260517-164027-GPay-Business.jpg" class="qr-image-style" alt="GPay QR Code">' +
                               '<span style="color: #d32f2f; font-weight: bold; display: block;">⚠️ ध्यान दें: कृपया ऊपर दिए गए QR कोड पर भुगतान करके तुरंत स्क्रीनशॉट साझा करें, तभी आपकी बाकी रिपोर्ट आपको मिलेगी।</span>';
             
-            newMsg.innerHTML = warningText;
-            chatWindow.appendChild(newMsg);
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            var messageData = {
+                sender: "admin",
+                text: warningText,
+                timestamp: Date.now()
+            };
+
+            database.ref('chats').push(messageData);
         }
 
+        // एडमिन का साधारण टेक्स्ट मैसेज डेटाबेस में भेजने का फंक्शन
         function adminSendMessage() {
             var input = document.getElementById('adminMsgInput');
             var text = input.value.trim();
             if(text === "") return;
 
-            var chatWindow = document.getElementById('adminChatWindow');
-            var newMsg = document.createElement('div');
-            newMsg.className = "message msg-right";
-            newMsg.innerText = text;
+            var messageData = {
+                sender: "admin",
+                text: text,
+                timestamp: Date.now()
+            };
 
-            chatWindow.appendChild(newMsg);
-            input.value = "";
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+            database.ref('chats').push(messageData)
+            .then(() => {
+                input.value = "";
+            });
         }
     </script>
 
 </body>
 </html>
-
