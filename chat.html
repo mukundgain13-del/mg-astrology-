@@ -3,68 +3,185 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MG ASTROLOGY - Admin Panel</title>
+    <title>MG ASTROLOGY - Customer Chat</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-
+    
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #efeae2; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .admin-container { background: white; width: 100%; max-width: 450px; height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .admin-header { background-color: #008069; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #005e4e; }
+        
+        body { 
+            background-color: #efeae2; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+
+        .chat-container { 
+            background: #efeae2; 
+            width: 100%; 
+            max-width: 450px; 
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            background-color: #008069; 
+            color: white;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-bottom: 1px solid #005e4e;
+        }
+
         .header-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
-        .top-block-btn { display: none; background-color: #d32f2f; color: white; border: none; padding: 6px 14px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; }
-        .search-box-area { padding: 10px 15px; background-color: #f0f2f5; border-bottom: 1px solid #e1e9eb; }
-        .search-input { width: 100%; padding: 10px 15px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 15px; }
-        .customer-list { flex: 1; overflow-y: auto; background-color: white; }
-        .no-customer-msg { text-align: center; color: #667781; font-size: 15px; margin-top: 40px; padding: 0 20px; line-height: 1.6; }
-        .customer-item { padding: 15px 20px; border-bottom: 1px solid #f0f2f5; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
-        .customer-item:hover { background-color: #f5f6f6; }
-        .customer-item.selected { background-color: #e1f5fe; border-left: 5px solid #0288d1; }
-        .full-chat-window { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: #efeae2; z-index: 100; flex-direction: column; }
-        .inner-chat-header { background-color: #008069; color: white; padding: 15px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #005e4e; }
-        .back-btn { font-size: 22px; cursor: pointer; background: none; border: none; color: white; outline: none; }
-        .inner-chat-title { font-size: 20px; font-weight: bold; }
-        .chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .message { max-width: 85%; padding: 10px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
-        .msg-right { background-color: #d9fdd3; color: #333; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .msg-left { background-color: white; color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .qr-image-style { width: 100%; max-width: 200px; border-radius: 8px; margin-bottom: 8px; display: block; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .quick-reply-bar { background-color: #fff; padding: 8px 10px; display: flex; gap: 10px; border-top: 1px solid #e1e9eb; }
-        .quick-btn-qr { background-color: #ffeedd; color: #d32f2f; border: 1px solid #ffcc80; padding: 8px 16px; border-radius: 20px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; text-align: center; outline: none; }
-        .chat-input-bar { background-color: #f0f2f5; padding: 10px 15px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #e1e9eb; }
-        .chat-input { flex: 1; padding: 12px 15px; border: 1px solid white; border-radius: 20px; font-size: 16px; outline: none; }
-        .send-btn { background-color: #00a884; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; outline: none; }
+        .header-status { font-size: 13px; color: #ffeb3b; margin-top: 2px; font-weight: bold; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.5;
+            position: relative;
+            cursor: pointer; 
+            word-wrap: break-word;
+        }
+
+        .msg-left {
+            background-color: white;
+            color: #333;
+            align-self: flex-start;
+            border-top-left-radius: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .msg-right {
+            background-color: #d9fdd3; 
+            color: #333;
+            align-self: flex-end;
+            border-top-right-radius: 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+
+        .chat-input-bar {
+            background-color: #f0f2f5;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-top: 1px solid #e1e9eb;
+        }
+
+        .upload-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: #54656f;
+            cursor: pointer;
+            outline: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid white;
+            border-radius: 20px;
+            font-size: 16px;
+            outline: none;
+            background-color: white;
+        }
+
+        .send-btn {
+            background-color: #00a884;
+            color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            outline: none;
+        }
+
+        .action-overlay {
+            display: none;
+            position: absolute;
+            top: 60px; left: 0; width: 100%;
+            background-color: #00a884;
+            color: white;
+            padding: 10px 20px;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 15px;
+            font-weight: bold;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .action-icons { display: flex; gap: 20px; font-size: 18px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <div class="admin-header">
-            <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY - ADMIN</div>
-            <button class="top-block-btn" id="topBlockBtn" onclick="blockSelectedCustomer()">🚫 Block करें</button>
-        </div>
-        <div class="search-box-area"><input type="text" class="search-input" placeholder="🔍  कस्टमर का नाम या नंबर ढूंढें..."></div>
-        <div class="customer-list" id="customerListWindow">
-            <div class="no-customer-msg" id="emptyNotice">💬 अभी कोई नया संदेश नहीं है।<br>जब कोई ग्राहक मैसेज भेजेगा, उसकी चैट यहाँ दिखाई देगी।</div>
+    <div class="chat-container">
+        
+        <div class="action-overlay" id="actionMenu">
+            <span id="selectedMsgText">मैसेज सेलेक्ट किया गया</span>
+            <div class="action-icons">
+                <span onclick="editMessage()">✏️ Edit</span>
+                <span onclick="deleteMessage()">🗑️ Delete</span>
+            </div>
         </div>
 
-        <div class="full-chat-window" id="fullChatWindow">
-            <div class="inner-chat-header">
-                <button class="back-btn" onclick="closeCustomerChat()">⬅</button>
-                <div class="inner-chat-title" id="chattingWithTitle">कस्टमर चैट</div>
-            </div>
-            <div class="chat-messages" id="adminChatWindow"></div>
-            <div class="quick-reply-bar"><button class="quick-btn-qr" onclick="sendPaymentWarning()">📸  भुगतान चेतावनी संदेश भेजें</button></div>
-            <div class="chat-input-bar">
-                <input type="text" class="chat-input" id="adminMsgInput" placeholder="अपना उत्तर टाइप करें...">
-                <button class="send-btn" onclick="adminSendMessage()">➤</button>
+        <div class="chat-header">
+            <div class="header-title">MG ASTROLOGY</div>
+            <div class="header-status" id="statusField"></div>
+        </div>
+
+        <div class="chat-messages" id="chatWindow">
+            <div class="message msg-left" onclick="selectMessage(this)">
+                नमस्कार! MG Astrology में आपका स्वागत है। 🙏<br><br>
+                <strong>कृपया परामर्श शुरू करने के लिए अपनी सही डिटेल्स यहाँ टाइप करके भेजें:</strong><br>
+                1. अपना पूरा नाम (Full Name)<br>
+                2. जन्म तिथि (Date of Birth)<br>
+                3. जन्म का सही समय (Time of Birth)<br>
+                4. जन्म का स्थान/शहर (Place of Birth)<br>
+                5. अपना मुख्य सवाल (Your Question)<br><br>
+                <em>*नोट: यदि आप हस्तरेखा दिखाना चाहते हैं, तो नीचे दिए गए पिन (📎) बटन से अपने दोनों हाथों की साफ फोटो अपलोड करें।</em>
             </div>
         </div>
+
+        <div class="chat-input-bar">
+            <button class="upload-btn" onclick="openGallery()">📎</button>
+            <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="imageSelected()">
+            
+            <input type="text" class="chat-input" id="msgInput" placeholder="Message टाइप करें..." oninput="checkTyping()">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </div>
+
     </div>
 
     <script>
-        // एडमिन में भी बिल्कुल सही चाबी सेट कर दी गई है
+        // आपकी बिल्कुल असली फायरबेस चाबी यहाँ जोड़ी गई है
         const firebaseConfig = {
             apiKey: "AIzaSyBYCVE3YIwhu1kCA0ITLiOr-BXGQeA8cB8",
             authDomain: "mg-astrology.firebaseapp.com",
@@ -78,81 +195,95 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        var selectedCustomerId = null;
-        var selectedCustomerName = "";
+        var activeMessageElement = null;
 
+        // एडमिन के रिप्लाई को लाइव डेटाबेस से खींचकर ग्राहक की स्क्रीन पर तुरंत दिखाने का सिस्टम
         database.ref('chats').on('value', (snapshot) => {
-            const customerListWindow = document.getElementById('customerListWindow');
-            const emptyNotice = document.getElementById('emptyNotice');
-            customerListWindow.innerHTML = '';
-            
-            if (snapshot.exists()) {
-                if(emptyNotice) emptyNotice.style.display = 'none';
-                var item = document.createElement('div');
-                item.className = "customer-item";
-                item.id = "customer_1";
-                item.innerHTML = '<strong>🔮 लाइव कस्टमर (Live Chat)</strong><span style="font-size:13px; color:#667781;">क्लिक करके नया मैसेज देखें</span>';
-                item.onclick = function() { selectCustomer('customer_1', 'कस्टमर'); openCustomerChat('कस्टमर'); };
-                customerListWindow.appendChild(item);
-
-                if(selectedCustomerId === 'customer_1') { loadLiveMessages(snapshot.val()); }
-            } else {
-                customerListWindow.appendChild(emptyNotice);
-                if(emptyNotice) emptyNotice.style.display = 'block';
+            if(snapshot.exists()) {
+                var chatWindow = document.getElementById('chatWindow');
+                // पहला स्वागत मैसेज छोड़कर पुराना सब साफ करें ताकि रिपीट न हो
+                chatWindow.innerHTML = chatWindow.firstElementChild.outerHTML; 
+                
+                snapshot.forEach((childSnapshot) => {
+                    var msg = childSnapshot.val();
+                    var newMsg = document.createElement('div');
+                    
+                    if(msg.sender === "customer") {
+                        newMsg.className = "message msg-right";
+                        newMsg.innerText = msg.text;
+                    } else {
+                        // एडमिन का टेक्स्ट मैसेज या QR कोड इमेज यहाँ लोड होगी
+                        newMsg.className = "message msg-left";
+                        if(msg.text.includes('<img')) { newMsg.innerHTML = msg.text; } else { newMsg.innerText = msg.text; }
+                    }
+                    newMsg.onclick = function() { selectMessage(this); };
+                    chatWindow.appendChild(newMsg);
+                });
+                chatWindow.scrollTop = chatWindow.scrollHeight;
             }
         });
 
-        function loadLiveMessages(messagesData) {
-            var chatWindow = document.getElementById('adminChatWindow');
-            chatWindow.innerHTML = '';
-            Object.keys(messagesData).forEach((key) => {
-                var msg = messagesData[key];
-                var newMsg = document.createElement('div');
-                if(msg.sender === "admin") {
-                    newMsg.className = "message msg-right";
-                    if(msg.text.includes('<img')) { newMsg.innerHTML = msg.text; } else { newMsg.innerText = msg.text; }
-                } else {
-                    newMsg.className = "message msg-left";
-                    newMsg.innerText = msg.text;
-                }
-                chatWindow.appendChild(newMsg);
-            });
-            chatWindow.scrollTop = chatWindow.scrollHeight;
+        function openGallery() {
+            document.getElementById('galleryInput').click();
         }
 
-        function selectCustomer(id, name) {
-            var items = document.getElementsByClassName('customer-item');
-            for(var i=0; i<items.length; i++) { items[i].classList.remove('selected'); }
-            var currentItem = document.getElementById(id);
-            if(currentItem) currentItem.classList.add('selected');
-            selectedCustomerId = id;
-            selectedCustomerName = name;
-            document.getElementById('topBlockBtn').style.display = 'block';
-            document.getElementById('mainHeaderTitle').innerText = "चयनित: " + name;
-        }
-
-        function blockSelectedCustomer() {
-            if(selectedCustomerId && confirm("क्या आप सचमुच " + selectedCustomerName + " की चैट डिलीट करना चाहते हैं?")) {
-                database.ref('chats').remove();
-                alert("चैट साफ हो गई!");
-                closeCustomerChat();
+        function imageSelected() {
+            var fileInput = document.getElementById('galleryInput');
+            if(fileInput.files.length > 0) {
+                alert("फोटो सेलेक्ट हो गई है!");
             }
         }
 
-        function closeCustomerChat() { document.getElementById('fullChatWindow').style.display = 'none'; selectedCustomerId = null; document.getElementById('topBlockBtn').style.display = 'none'; document.getElementById('mainHeaderTitle').innerText = "MG ASTROLOGY - ADMIN"; }
-        function openCustomerChat(name) { document.getElementById('chattingWithTitle').innerText = name; document.getElementById('fullChatWindow').style.display = 'flex'; database.ref('chats').once('value', (snapshot) => { if(snapshot.exists()) loadLiveMessages(snapshot.val()); }); }
-
-        function sendPaymentWarning() {
-            var warningText = '<img src="https://i.ibb.co/SDBfnhQy/Screenshot-20260517-164027-GPay-Business.jpg" class="qr-image-style" alt="GPay QR Code"><span style="color: #d32f2f; font-weight: bold; display: block;">⚠️ ध्यान दें: कृपया ऊपर दिए गए QR कोड पर भुगतान करके तुरंत स्क्रीनशॉट साझा करें, तभी आपकी बाकी रिपोर्ट आपको मिलेगी।</span>';
-            database.ref('chats').push({ sender: "admin", text: warningText, timestamp: Date.now() });
-        }
-
-        function adminSendMessage() {
-            var input = document.getElementById('adminMsgInput');
+        // ग्राहक द्वारा भेजा गया मैसेज लाइव आपके फायरबेस फोल्डर में जाएगा
+        function sendMessage() {
+            var input = document.getElementById('msgInput');
             var text = input.value.trim();
             if(text === "") return;
-            database.ref('chats').push({ sender: "admin", text: text, timestamp: Date.now() }).then(() => { input.value = ""; });
+
+            var messageData = { sender: "customer", text: text, timestamp: Date.now() };
+            
+            database.ref('chats').push(messageData).then(() => {
+                input.value = "";
+                document.getElementById('statusField').innerText = "";
+            });
+        }
+
+        function checkTyping() {
+            var input = document.getElementById('msgInput');
+            var status = document.getElementById('statusField');
+            if(input.value.length > 0) {
+                status.innerText = "कस्टमर टाइप कर रहा है...";
+            } else {
+                status.innerText = "";
+            }
+        }
+
+        function selectMessage(element) {
+            activeMessageElement = element;
+            var overlay = document.getElementById('actionMenu');
+            var textPreview = element.innerText.substring(0, 15) + "...";
+            document.getElementById('selectedMsgText').innerText = "चयनित: " + textPreview;
+            overlay.style.display = 'flex';
+        }
+
+        function deleteMessage() {
+            if(activeMessageElement) {
+                activeMessageElement.remove();
+                document.getElementById('actionMenu').style.display = 'none';
+            }
+        }
+
+        function editMessage() {
+            if(activeMessageElement) {
+                var currentText = activeMessageElement.innerText;
+                var newText = prompt("मैसेज को सुधारें:", currentText);
+                if(newText != null && newText.trim() !== "") {
+                    activeMessageElement.innerText = newText;
+                }
+                document.getElementById('actionMenu').style.display = 'none';
+            }
         }
     </script>
+
 </body>
 </html>
