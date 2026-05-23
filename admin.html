@@ -255,7 +255,6 @@
             Notification.requestPermission();
         }
 
-        // 🚀 नया रूट कनेक्शन: सीधे मेन रूट से ग्राहकों के फोल्डर्स को लाइव सिंक करने के लिए
         database.ref().on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
@@ -264,7 +263,7 @@
             
             if (snapshot.exists()) {
                 var rootData = snapshot.val();
-                var rooms = rootData.chats || {}; // 'chats' फोल्डर के अंदर से सारे रूम्स निकालेगा
+                var rooms = rootData.chats || {}; 
                 var hasRooms = false;
 
                 if(emptyNotice) emptyNotice.style.display = 'none';
@@ -277,7 +276,6 @@
                     
                     var displayTitle = "📱 कस्टमर नंबर: " + roomKey;
                     
-                    // घंटी बजाने का सटीक लॉजिक
                     if (initialLoadDone) {
                         var currentCount = keys.length;
                         var oldCount = lastMessagesCounts[roomKey] || 0;
@@ -307,7 +305,6 @@
                     customerListWindow.appendChild(item);
                 });
 
-                // लाइव चैट अपडेट को बनाए रखने के लिए
                 if(selectedCustomerId) {
                     var openRoomKey = selectedCustomerId.replace("room_", "");
                     if(rooms[openRoomKey]) {
