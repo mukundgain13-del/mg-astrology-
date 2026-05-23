@@ -214,7 +214,7 @@
     </div>
 
     <div class="dashboard-container">
-        
+
         <div class="login-box">
             <input type="tel" id="custPhone" class="login-input" placeholder="Mo-No. (अपना mobile नंबर लिखें)" required>
             <input type="text" id="custName" class="login-input" placeholder="Name (अपना पूरा नाम लिखें)" required>
@@ -260,7 +260,7 @@
                 <li>यह सेवा केवल गंभीर परामर्श चाहने वाले ग्राहकों के लिए है। फ्री या टाइमपास करने वाले कृपया दूर रहें।</li>
                 <li>लॉगिन करते समय सही नाम और सक्रिय मोबाइल नंबर देना अनिवार्य है। गलत जानकारी पर तुरंत ब्लॉक कर दिया जाएगा।</li>
                 <li>चैट बॉक्स में किसी भी प्रकार की अभद्र भाषा या फालतू बहस करने पर बिना किसी पूर्व सूचना के तुरंत स्थायी रूप से ब्लॉक (Block) कर दिया जाएगा।</li>
-                <li style="font-weight: bold; color: #d32f2f;">एक बार शुल्क जमा होने के बाद किसी भी परिस्थिति में फीस रिफंड (वापस) नहीं की जाएगी। परामर्श केवल आपके द्वारा दिए गए जन्म विवरण के आधार पर ही मान्य होगा।</li>
+                <li style="font-weight: bold; color: #d32f2f;">एक बार शुल्क जमा होने के बाद किसी भी परिस्थिति में FEES REFUND (वापस) नहीं की जाएगी। परामर्श केवल आपके द्वारा दिए गए जन्म विवरण के आधार पर ही मान्य होगा।</li>
                 <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
             </ol>
             <button class="close-modal-btn" onclick="closeTerms()">शर्तें स्वीकार हैं / बंद करें</button>
@@ -275,6 +275,7 @@
             document.getElementById('termsModal').style.display = 'none';
         }
 
+        // 🚀 हर ग्राहक को उसके अपने नंबर वाले पर्सनल रूम में भेजने का नया फुल-प्रूफ लॉजिक
         function loginAndGo() {
             var phone = document.getElementById('custPhone').value.trim();
             var name = document.getElementById('custName').value.trim();
@@ -284,10 +285,14 @@
                 return;
             }
             
-            localStorage.setItem('customerName', name);
-            localStorage.setItem('customerPhone', phone);
+            // मोबाइल नंबर से फालतू खाली जगह या विशेष चिन्ह हटाकर शुद्ध नंबर रखने के लिए
+            var cleanPhone = phone.replace(/[^0-9]/g, "");
             
-            window.location.href = "chat.html";
+            localStorage.setItem('customerName', name);
+            localStorage.setItem('customerPhone', cleanPhone);
+            
+            // अब ग्राहक किसी कॉमन पेज पर नहीं, सीधे अपने पर्सनल नंबर वाले यूनिक लिंक पर रीडायरेक्ट होगा
+            window.location.href = "chat.html?room=" + cleanPhone;
         }
     </script>
 
