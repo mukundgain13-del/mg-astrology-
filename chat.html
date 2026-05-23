@@ -1,4 +1,4 @@
-      <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
@@ -18,11 +18,10 @@
             height: 100vh; 
         }
 
-        /* कंप्यूटर क्रोम के लिए रिस्पॉन्सिव डिज़ाइन और मोबाइल के लिए फुल स्क्रीन */
         .chat-container { 
             background: #efeae2; 
             width: 100%; 
-            max-width: 600px; /* बड़ी स्क्रीन पर सुंदर चौड़ाई */
+            max-width: 600px; 
             height: 100vh; 
             display: flex;
             flex-direction: column;
@@ -30,7 +29,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
 
-        /* मोबाइल स्क्रीन पर पूरी जगह घेरने के लिए */
         @media (max-width: 600px) {
             .chat-container {
                 max-width: 100%;
@@ -47,7 +45,6 @@
             border-bottom: 1px solid #005e4e;
         }
 
-        /* नया बैक बटन */
         .back-btn {
             font-size: 22px;
             color: white;
@@ -101,7 +98,6 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.15);
         }
 
-        /* भेजी गई इमेज और QR कोड का सुंदर साइज */
         .chat-img {
             max-width: 180px;
             max-height: 180px;
@@ -110,7 +106,6 @@
             margin-bottom: 5px;
         }
 
-        /* डाउनलोड गैलरी बटन की डिज़ाइन */
         .download-btn {
             display: inline-flex;
             align-items: center;
@@ -118,9 +113,9 @@
             background-color: #008069;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
             cursor: pointer;
             margin-top: 5px;
             font-weight: bold;
@@ -175,7 +170,7 @@
             display: none;
             position: absolute;
             top: 60px; left: 0; width: 100%;
-            background-color: #b32626; /* डिलीट के लिए अलर्ट कलर */
+            background-color: #b32626; 
             color: white;
             padding: 10px 20px;
             justify-content: space-between;
@@ -232,7 +227,6 @@
     </div>
 
     <script>
-        // आपकी असली फायरबेस चाबी बिना किसी बदलाव के
         const firebaseConfig = {
             apiKey: "AIzaSyBYCVE3YIwhu1kCA0ITLiOr-BXGQeA8cB8",
             authDomain: "mg-astrology.firebaseapp.com",
@@ -248,11 +242,8 @@
         const database = firebase.database();
         var selectedMessageKey = null;
 
-        // एडमिन और ग्राहक के मैसेजेस को लाइव रेंडर करने का सिस्टम
         database.ref('chats').on('value', (snapshot) => {
             var chatWindow = document.getElementById('chatWindow');
-            
-            // पहले स्वागत मैसेज को सुरक्षित रखकर बाकी पुराना साफ करें
             var welcomeMsg = chatWindow.firstElementChild.outerHTML;
             chatWindow.innerHTML = welcomeMsg;
             
@@ -265,24 +256,22 @@
                     
                     if(msg.sender === "customer") {
                         newMsg.className = "message msg-right";
-                        
-                        // अगर ग्राहक ने इमेज भेजी है
                         if(msg.fileType === "image") {
                             newMsg.innerHTML = `<img src="${msg.text}" class="chat-img" alt="Uploaded Hand">`;
                         } else {
                             newMsg.innerText = msg.text;
                         }
-                        
-                        // डिलीट करने के लिए क्लिक इवेंट
                         newMsg.onclick = function() { selectMessage(msgKey, msg.fileType === "image" ? "फोटो" : msg.text); };
                         
                     } else {
-                        // एडमिन का मैसेज या QR कोड
                         newMsg.className = "message msg-left";
                         
-                        // अगर एडमिन ने इमेज या QR भेजा है तो डाउनलोड बटन जोड़ें
-                        if(msg.text.includes('<img') || msg.text.startsWith('data:image')) {
-                            var imgUrl = msg.text.includes('src="') ? msg.text.split('src="')[1].split('"')[0] : msg.text;
+                        // यहाँ सुधरा हुआ इमेज और QR डिटेक्शन है
+                        if(msg.text.includes('<img') || msg.text.startsWith('data:image') || msg.text.includes('firebasestorage')) {
+                            var imgUrl = msg.text;
+                            if(msg.text.includes('src="')) {
+                                imgUrl = msg.text.split('src="')[1].split('"')[0];
+                            }
                             newMsg.innerHTML = `<img src="${imgUrl}" class="chat-img"><button class="download-btn" onclick="downloadQR('${imgUrl}')">📥 Save to Gallery</button>`;
                         } else {
                             newMsg.innerText = msg.text;
@@ -299,7 +288,6 @@
             document.getElementById('galleryInput').click();
         }
 
-        // गैलरी से फोटो चुनते ही उसे लाइव फायरबेस में भेजने का ऑटोमैटिक सिस्टम
         function imageSelected() {
             var fileInput = document.getElementById('galleryInput');
             if(fileInput.files.length > 0) {
@@ -314,16 +302,14 @@
                         fileType: "image",
                         timestamp: Date.now() 
                     };
-                    // सीधे डेटाबेस में अपलोड
                     database.ref('chats').push(messageData).then(() => {
-                        fileInput.value = ""; // रीसेट
+                        fileInput.value = "";
                     });
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        // टेक्स्ट मैसेज भेजने का सिस्टम
         function sendMessage() {
             var input = document.getElementById('msgInput');
             var text = input.value.trim();
@@ -347,7 +333,6 @@
             }
         }
 
-        // व्हाट्सएप स्टाइल डिलीट के लिए मैसेज सेलेक्ट करना
         function selectMessage(key, textContent) {
             selectedMessageKey = key;
             var overlay = document.getElementById('actionMenu');
@@ -361,7 +346,6 @@
             selectedMessageKey = null;
         }
 
-        // डेटाबेस से मैसेज को पूरी तरह डिलीट करना ताकि दोनों तरफ से हट जाए
         function deleteMessage() {
             if(selectedMessageKey) {
                 database.ref('chats').child(selectedMessageKey).remove().then(() => {
@@ -370,19 +354,27 @@
             }
         }
 
-        // QR कोड या इमेज को सीधे मोबाइल गैलरी में सेव करने का सिस्टम
-        function downloadQR(imgBase64) {
-            var link = document.createElement('a');
-            link.href = imgBase64;
-            link.download = 'MG_Astrology_QR.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        // पक्का और मजबूत डाउनलोड सिस्टम जो सुरक्षा नियमों को बाईपास कर सीधे गैलरी में सेव करेगा
+        function downloadQR(imgUrl) {
+            fetch(imgUrl)
+                .then(response => response.blob())
+                .then(blob => {
+                    const blobUrl = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'MG_Astrology_QR.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    window.URL.revokeObjectURL(blobUrl);
+                })
+                .catch(err => {
+                    // बैकअप तरीका अगर फेच ब्लॉक हो जाए तो नए टैब में इमेज खोल देगा जहाँ से लॉन्ग प्रेस करके सेव कर सकें
+                    window.open(imgUrl, '_blank');
+                });
         }
 
-        // सुरक्षित बैक बटन एक्शन (बिना लॉगआउट बाहर जाने के लिए)
         function goBack() {
-            // यहाँ आप अपने डैशबोर्ड या पिछले पेज का यूआरएल (जैसे index.html) डाल सकते हैं
             window.history.back(); 
         }
     </script>
