@@ -99,6 +99,12 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: #efeae2;
+            /* एडमिन चैट रूम के पीछे हल्का ज्योतिष सितारों वाला प्यारा थीम */
+            background-image: 
+                radial-gradient(rgba(0, 128, 105, 0.05) 1.5px, transparent 1.5px), 
+                radial-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 1px);
+            background-size: 40px 40px, 60px 60px;
+            background-position: 0 0, 20px 20px;
             z-index: 100;
             flex-direction: column;
         }
@@ -124,10 +130,9 @@
             gap: 12px;
         }
         .message { max-width: 85%; padding: 10px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
-        .msg-right { background-color: #d9fdd3; color: #333; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
-        .msg-left { background-color: white; color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .msg-right { background-color: rgba(217, 253, 211, 0.98); color: #333; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+        .msg-left { background-color: rgba(255, 255, 255, 0.98); color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
 
-        /* भेजी गई इमेज और QR कोड का सुंदर साइज */
         .qr-image-style, .chat-img-admin {
             width: 100%;
             max-width: 180px;
@@ -168,7 +173,6 @@
             border-top: 1px solid #e1e9eb;
         }
         
-        /* एडमिन के लिए पिन/गैलरी बटन की डिज़ाइन */
         .admin-upload-btn {
             background: none;
             border: none;
@@ -194,7 +198,7 @@
         </div>
 
         <div class="search-box-area">
-            <input type="text" class="search-input" placeholder="🔍  कस्टमर का नाम या नंबर ढूंढें...">
+            <input type="text" id="adminSearchInput" class="search-input" placeholder="🔍  कस्टमर का नाम या नंबर ढूंढें..." oninput="filterCustomers()">
         </div>
 
         <div class="customer-list" id="customerListWindow">
@@ -243,54 +247,81 @@
 
         var selectedCustomerId = null;
         var selectedCustomerName = "";
+        var lastMessagesCounts = {}; // हर रूम के मैसेज काउंट को ट्रैक करने के लिए
         var initialLoadDone = false; 
 
-        // लाइव नोटिफिकेशन घंटी के लिए ऑडियो टोन
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
 
-        // ब्राउज़र परमिशन मांगना नोटिफिकेशन के लिए
         if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
 
-        // 🚀 लाइव डेटाबेस से ग्राहकों के मैसेज खींचने का सिस्टम
+        // 🚀 असली डायनामिक लिस्टिंग सिस्टम - जो सभी कमरों को लाइव स्कैन करेगा
         database.ref('chats').on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
             
+            // पुरानी लिस्ट साफ करें
             customerListWindow.innerHTML = '';
             
             if (snapshot.exists()) {
                 if(emptyNotice) emptyNotice.style.display = 'none';
                 
-                var item = document.createElement('div');
-                item.className = "customer-item";
-                item.id = "customer_1";
-                item.innerHTML = '<strong>🔮 लाइव कस्टमर (Live Chat)</strong><span style="font-size:13px; color:#667781;">क्लिक करके नया मैसेज देखें</span>';
-                
-                item.onclick = function() {
-                    selectCustomer('customer_1', 'कस्टमर');
-                    openCustomerChat('कस्टमर');
-                };
-                
-                customerListWindow.appendChild(item);
+                var rooms = snapshot.val();
+                var hasRooms = false;
 
-                // घंटी बजाने का लॉजिक: अगर पहला लोड हो चुका है और कोई नया मैसेज कस्टमर की तरफ से जुड़ता है
-                if (initialLoadDone) {
-                    var allMsgs = snapshot.val();
-                    var keys = Object.keys(allMsgs);
-                    var lastMsg = allMsgs[keys[keys.length - 1]];
-                    if(lastMsg && lastMsg.sender === "customer") {
-                        notificationSound.play().catch(e => console.log("Sound error")); // प्यारी घंटी बजेगी
-                        if (Notification.permission === "granted") {
-                            new Notification("MG ASTROLOGY", { body: "कस्टमर का नया संदेश आया है!", icon: "https://i.ibb.co/SDBfnhQy/Screenshot-20260517-164027-GPay-Business.jpg" });
+                Object.keys(rooms).forEach((roomKey) => {
+                    hasRooms = true;
+                    var roomData = rooms[roomKey];
+                    var keys = Object.keys(roomData);
+                    
+                    // ग्राहक का नाम निकालने की कोशिश, नहीं तो 'नंबर रूम' दिखाएगा
+                    var lastMsg = roomData[keys[keys.length - 1]];
+                    var displayTitle = "📱 रूम: " + roomKey;
+                    
+                    // अगर हमारे पास इस रूम के मैसेजेस की संख्या पहले से कम है, तो घंटी बजाओ
+                    if (initialLoadDone) {
+                        var currentCount = keys.length;
+                        var oldCount = lastMessagesCounts[roomKey] || 0;
+                        if (currentCount > oldCount && lastMsg && lastMsg.sender === "customer") {
+                            notificationSound.play().catch(e => console.log("Sound unlock error"));
+                            if (Notification.permission === "granted") {
+                                new Notification("MG ASTROLOGY", { body: "नया संदेश आया है: " + roomKey });
+                            }
                         }
                     }
-                }
+                    lastMessagesCounts[roomKey] = keys.length;
+
+                    var item = document.createElement('div');
+                    item.className = "customer-item";
+                    item.id = "room_" + roomKey;
+                    if(selectedCustomerId === "room_" + roomKey) {
+                        item.classList.add('selected');
+                    }
+                    
+                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">अंतिम संदेश: ${lastMsg ? (lastMsg.fileType === 'image' ? '📸 फोटो' : lastMsg.text.substring(0, 20)) : ''}</span>`;
+                    
+                    item.onclick = function() {
+                        selectCustomer("room_" + roomKey, roomKey);
+                        openCustomerChat(roomKey, roomData);
+                    };
+                    
+                    customerListWindow.appendChild(item);
+                });
+
                 initialLoadDone = true;
 
-                if(selectedCustomerId === 'customer_1') {
-                    loadLiveMessages(snapshot.val());
+                // अगर कोई चैट खुली हुई है, तो उसे लाइव अपडेट रखें
+                if(selectedCustomerId) {
+                    var openRoomKey = selectedCustomerId.replace("room_", "");
+                    if(rooms[openRoomKey]) {
+                        loadLiveMessages(rooms[openRoomKey]);
+                    }
+                }
+
+                if(!hasRooms) {
+                    customerListWindow.appendChild(emptyNotice);
+                    if(emptyNotice) emptyNotice.style.display = 'block';
                 }
             } else {
                 customerListWindow.appendChild(emptyNotice);
@@ -299,7 +330,6 @@
             }
         });
 
-        // सुधरा हुआ मैसेज रेंडर फंक्शन: जो अंग्रेजी कोड को असली फोटो में बदलता है
         function loadLiveMessages(messagesData) {
             var chatWindow = document.getElementById('adminChatWindow');
             chatWindow.innerHTML = ''; 
@@ -320,7 +350,6 @@
                         newMsg.innerText = msg.text;
                     }
                 } else {
-                    // ग्राहक का मैसेज - अगर फोटो कोड (Base64) है तो असली फोटो दिखाओ!
                     newMsg.className = "message msg-left";
                     if(msg.fileType === "image" || msg.text.startsWith('data:image')) {
                         newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin" style="cursor:pointer;" onclick="window.open('${msg.text}', '_blank')">`;
@@ -348,13 +377,14 @@
             document.getElementById('mainHeaderTitle').innerText = "चयनित: " + name;
         }
 
-        // पूरा फोल्डर और इतिहास उड़ाने वाला डिलीट/ब्लॉक सिस्टम
+        // सिर्फ चुने हुए ग्राहक का फोल्डर उड़ाने वाला सिस्टम
         function blockSelectedCustomer() {
             if(selectedCustomerId) {
-                var confirmBlock = confirm("क्या आप सचमुच " + selectedCustomerName + " का पूरा फोल्डर और चैट हमेशा के लिए डिलीट करना चाहते हैं?");
+                var actualRoomKey = selectedCustomerId.replace("room_", "");
+                var confirmBlock = confirm("क्या आप सचमुच ग्राहक नंबर " + actualRoomKey + " का पूरा फोल्डर और चैट हमेशा के लिए डिलीट करना चाहते हैं?");
                 if(confirmBlock) {
-                    database.ref('chats').remove().then(() => {
-                        alert(selectedCustomerName + " का पूरा फोल्डर साफ़ कर दिया गया है!");
+                    database.ref('chats/' + actualRoomKey).remove().then(() => {
+                        alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
                         closeCustomerChat();
                     });
                 }
@@ -367,15 +397,10 @@
             document.getElementById('mainHeaderTitle').innerText = "MG ASTROLOGY - ADMIN";
         }
 
-        function openCustomerChat(name) {
-            document.getElementById('chattingWithTitle').innerText = name;
+        function openCustomerChat(roomKey, roomData) {
+            document.getElementById('chattingWithTitle').innerText = "कस्टमर: " + roomKey;
             document.getElementById('fullChatWindow').style.display = 'flex';
-            
-            database.ref('chats').once('value', (snapshot) => {
-                if(snapshot.exists()) {
-                    loadLiveMessages(snapshot.val());
-                }
-            });
+            loadLiveMessages(roomData);
         }
 
         function closeCustomerChat() {
@@ -384,6 +409,9 @@
         }
 
         function sendPaymentWarning() {
+            if(!selectedCustomerId) return;
+            var actualRoomKey = selectedCustomerId.replace("room_", "");
+
             var warningText = '<img src="https://i.ibb.co/SDBfnhQy/Screenshot-20260517-164027-GPay-Business.jpg" class="qr-image-style" alt="GPay QR Code">' +
                               '<span style="color: #d32f2f; font-weight: bold; display: block;">⚠️ ध्यान दें: कृपया ऊपर दिए गए QR कोड पर भुगतान करके तुरंत स्क्रीनशॉट साझा करें, तभी आपकी बाकी रिपोर्ट आपको मिलेगी।</span>';
             
@@ -393,15 +421,17 @@
                 timestamp: Date.now()
             };
 
-            database.ref('chats').push(messageData);
+            database.ref('chats/' + actualRoomKey).push(messageData);
         }
 
-        // एडमिन के लिए गैलरी खोलने और फोटो सेंड करने का सिस्टम
         function openAdminGallery() {
             document.getElementById('adminGalleryInput').click();
         }
 
         function adminImageSelected() {
+            if(!selectedCustomerId) return;
+            var actualRoomKey = selectedCustomerId.replace("room_", "");
+
             var fileInput = document.getElementById('adminGalleryInput');
             if(fileInput.files.length > 0) {
                 var file = fileInput.files[0];
@@ -414,7 +444,7 @@
                         text: base64Image, 
                         timestamp: Date.now() 
                     };
-                    database.ref('chats').push(messageData).then(() => {
+                    database.ref('chats/' + actualRoomKey).push(messageData).then(() => {
                         fileInput.value = ""; 
                     });
                 };
@@ -423,6 +453,9 @@
         }
 
         function adminSendMessage() {
+            if(!selectedCustomerId) return;
+            var actualRoomKey = selectedCustomerId.replace("room_", "");
+
             var input = document.getElementById('adminMsgInput');
             var text = input.value.trim();
             if(text === "") return;
@@ -433,11 +466,35 @@
                 timestamp: Date.now()
             };
 
-            database.ref('chats').push(messageData)
+            database.ref('chats/' + actualRoomKey).push(messageData)
             .then(() => {
                 input.value = "";
             });
         }
+
+        // सर्च बॉक्स फ़िल्टर सिस्टम
+        function filterCustomers() {
+            var input = document.getElementById('adminSearchInput').value.toLowerCase();
+            var items = document.getElementsByClassName('customer-item');
+            for (var i = 0; i < items.length; i++) {
+                var text = items[i].innerText.toLowerCase();
+                if (text.includes(input)) {
+                    items[i].style.display = "";
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
+        }
+
+        // पहले टच पर साउंड अनलॉक करने के लिए सुरक्षित कोड
+        document.body.addEventListener('click', function() {
+            if(notificationSound) {
+                notificationSound.play().then(() => {
+                    notificationSound.pause();
+                    notificationSound.currentTime = 0;
+                }).catch(e => {});
+            }
+        }, {once: true});
     </script>
 
 </body>
