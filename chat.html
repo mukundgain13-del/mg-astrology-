@@ -20,6 +20,12 @@
 
         .chat-container { 
             background: #efeae2; 
+            /* हल्का और क्लासी ज्योतिषीय सितारों वाला प्रीमियम बैकग्राउंड थीम - मैसेजेस के पीछे दिखेगा */
+            background-image: 
+                radial-gradient(rgba(0, 128, 105, 0.05) 1.5px, transparent 1.5px), 
+                radial-gradient(rgba(212, 175, 55, 0.07) 1px, transparent 1px);
+            background-size: 40px 40px, 60px 60px;
+            background-position: 0 0, 20px 20px;
             width: 100%; 
             max-width: 600px; 
             height: 100vh; 
@@ -35,16 +41,22 @@
             }
         }
 
+        /* 🔝 ऊपर की वीआईपी डिज़ाइनर फिक्स पट्टी (Sticky Branded Header) */
         .chat-header {
-            background-color: #008069; 
+            background: linear-gradient(135deg, #005e4e 0%, #008069 100%); /* प्रीमियम ग्रेडिएंट शेड */
             color: white;
-            padding: 14px 20px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #005e4e;
+            justify-content: space-between;
+            border-bottom: 2px solid #d4af37; /* नीचे पतली गोल्डन प्रीमियम लाइन */
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
+        /* बैक बटन की नई क्लीन डिज़ाइन */
         .back-btn {
             font-size: 22px;
             color: white;
@@ -52,15 +64,59 @@
             text-decoration: none;
             display: flex;
             align-items: center;
+            margin-right: 10px;
+            z-index: 1002;
+        }
+
+        /* बिना चाँद वाला एकदम साफ, प्रोफेशनल और चमकदार गोल लोगो */
+        .designer-logo {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #d4af37; /* रॉयल गोल्ड बॉर्डर */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            color: #006755;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 1002;
+        }
+
+        /* बिल्कुल बीच में बेहद मस्त, रॉयल और प्रीमियम डिज़ाइनदार नाम */
+        .designer-title-center {
+            font-size: 21px; 
+            font-weight: bold; 
+            letter-spacing: 2px; 
+            font-family: 'Cinzel', 'Georgia', serif; /* प्योर रॉयल और क्लासिक लुक */
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px rgba(255,235,59,0.2);
+            flex: 1;
+            text-align: center;
+            margin-right: 52px; /* लोगो और बैक बटन के वजन को बराबर सेंटर में रखने के लिए */
         }
 
         .header-info {
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
-        .header-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
-        .header-status { font-size: 13px; color: #ffeb3b; margin-top: 2px; font-weight: bold; h-min: 18px; }
+        /* टाइपिंग स्टेटस अब पट्टी के नीचे बहुत ही सुंदर और साफ दिखेगा */
+        .header-status { 
+            font-size: 12px; 
+            color: #ffeb3b; 
+            margin-top: 1px; 
+            font-weight: bold; 
+            min-height: 16px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            text-align: center;
+        }
 
         .chat-messages {
             flex: 1;
@@ -69,8 +125,10 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            z-index: 5;
         }
 
+        /* मैसेजेस के डिब्बों की बैकग्राउंड ओपेसिटी ताकि लिखावट एकदम साफ रहे */
         .message {
             max-width: 85%;
             padding: 10px 14px;
@@ -83,19 +141,19 @@
         }
 
         .msg-left {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.98); /* ठोस सफ़ेद ताकि टेक्स्ट एकदम चमके */
             color: #333;
             align-self: flex-start;
             border-top-left-radius: 0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
 
         .msg-right {
-            background-color: #d9fdd3; 
+            background-color: rgba(217, 253, 211, 0.98); /* ठोस व्हाट्सएप ग्रीन */
             color: #333;
             align-self: flex-end;
             border-top-right-radius: 0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
         }
 
         .chat-img {
@@ -128,6 +186,7 @@
             align-items: center;
             gap: 10px;
             border-top: 1px solid #e1e9eb;
+            z-index: 10;
         }
 
         .upload-btn {
@@ -169,7 +228,7 @@
         .action-overlay {
             display: none;
             position: absolute;
-            top: 60px; left: 0; width: 100%;
+            top: 70px; left: 0; width: 100%;
             background-color: #b32626; 
             color: white;
             padding: 10px 20px;
@@ -177,7 +236,7 @@
             align-items: center;
             font-size: 15px;
             font-weight: bold;
-            z-index: 10;
+            z-index: 1010;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         .action-icons { display: flex; gap: 20px; font-size: 15px; cursor: pointer; }
@@ -197,8 +256,9 @@
 
         <div class="chat-header">
             <div class="back-btn" onclick="goBack()">⬅️</div>
+            <div class="designer-logo">MG</div>
             <div class="header-info">
-                <div class="header-title">MG ASTROLOGY</div>
+                <div class="designer-title-center">MG ASTROLOGY</div>
                 <div class="header-status" id="statusField"></div>
             </div>
         </div>
@@ -242,7 +302,15 @@
         const database = firebase.database();
         var selectedMessageKey = null;
 
-        database.ref('chats').on('value', (snapshot) => {
+        // 🚀 यूआरएल लिंक से ग्राहक का मोबाइल नंबर (यूनिक रूम आईडी) निकालने का जादुई सिस्टम
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomID = urlParams.get('room') || localStorage.getItem('customerPhone') || "default_room";
+        
+        // अब डेटाबेस सीधे इस ग्राहक के अपने पर्सनल फोल्डर नंबर से कनेक्ट होगा
+        const chatRef = database.ref('chats/' + roomID);
+
+        // लाइव मैसेजेस लोड करने का सिस्टम (ग्राहक के पर्सनल रूम से)
+        chatRef.on('value', (snapshot) => {
             var chatWindow = document.getElementById('chatWindow');
             var welcomeMsg = chatWindow.firstElementChild.outerHTML;
             chatWindow.innerHTML = welcomeMsg;
@@ -266,7 +334,6 @@
                     } else {
                         newMsg.className = "message msg-left";
                         
-                        // यहाँ सुधरा हुआ इमेज और QR डिटेक्शन है
                         if(msg.text.includes('<img') || msg.text.startsWith('data:image') || msg.text.includes('firebasestorage')) {
                             var imgUrl = msg.text;
                             if(msg.text.includes('src="')) {
@@ -302,7 +369,8 @@
                         fileType: "image",
                         timestamp: Date.now() 
                     };
-                    database.ref('chats').push(messageData).then(() => {
+                    // पर्सनल रूम के अंदर फोटो पुश होगी
+                    chatRef.push(messageData).then(() => {
                         fileInput.value = "";
                     });
                 };
@@ -317,7 +385,8 @@
 
             var messageData = { sender: "customer", text: text, fileType: "text", timestamp: Date.now() };
             
-            database.ref('chats').push(messageData).then(() => {
+            // पर्सनल रूम के अंदर टेक्स्ट मैसेज पुश होगा
+            chatRef.push(messageData).then(() => {
                 input.value = "";
                 document.getElementById('statusField').innerText = "";
             });
@@ -348,13 +417,13 @@
 
         function deleteMessage() {
             if(selectedMessageKey) {
-                database.ref('chats').child(selectedMessageKey).remove().then(() => {
+                // पर्सनल रूम से मैसेज डिलीट होगा
+                chatRef.child(selectedMessageKey).remove().then(() => {
                     closeActionMenu();
                 });
             }
         }
 
-        // पक्का और मजबूत डाउनलोड सिस्टम जो सुरक्षा नियमों को बाईपास कर सीधे गैलरी में सेव करेगा
         function downloadQR(imgUrl) {
             fetch(imgUrl)
                 .then(response => response.blob())
@@ -369,7 +438,6 @@
                     window.URL.revokeObjectURL(blobUrl);
                 })
                 .catch(err => {
-                    // बैकअप तरीका अगर फेच ब्लॉक हो जाए तो नए टैब में इमेज खोल देगा जहाँ से लॉन्ग प्रेस करके सेव कर सकें
                     window.open(imgUrl, '_blank');
                 });
         }
