@@ -8,69 +8,74 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         body { 
-            /* सुंदर और हल्का ज्योतिष सितारों वाला बैकग्राउंड थीम */
+            /* हल्का और क्लासी ज्योतिषीय सितारों वाला प्रीमियम बैकग्राउंड थीम */
             background-color: #efeae2; 
-            background-image: radial-gradient(rgba(0, 128, 105, 0.08) 1px, transparent 0), radial-gradient(rgba(0, 128, 105, 0.05) 2px, transparent 0);
-            background-size: 30px 30px;
-            background-position: 0 0, 15px 15px;
+            background-image: 
+                radial-gradient(rgba(0, 128, 105, 0.07) 1.5px, transparent 1.5px), 
+                radial-gradient(rgba(212, 175, 55, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px, 60px 60px;
+            background-position: 0 0, 20px 20px;
             display: flex; 
             justify-content: center; 
             align-items: center; 
             min-height: 100vh; 
             padding: 15px;
-            padding-top: 80px; /* ऊपर की फिक्स पट्टी के लिए जगह */
+            padding-top: 85px; /* ऊपर की फिक्स डिज़ाइनर पट्टी के लिए सुरक्षित जगह */
         }
 
-        /* ऊपर की वीआईपी फिक्स पट्टी (Sticky Header) */
-        .top-vip-bar {
+        /* 🔝 ऊपर की वीआईपी डिज़ाइनर फिक्स पट्टी (Sticky Branded Header) */
+        .top-designer-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background-color: #008069;
+            background: linear-gradient(135deg, #005e4e 0%, #008069 100%); /* प्रीमियम ग्रेडिएंट शेड */
             color: white;
-            padding: 10px 20px;
+            padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            border-bottom: 2px solid #d4af37; /* नीचे पतली गोल्डन प्रीमियम लाइन */
             z-index: 999;
         }
 
-        /* बिना चाँद वाला एकदम साफ और सुंदर गोल लोगो */
-        .vip-logo {
+        /* बिना चाँद वाला एकदम साफ, प्रोफेशनल और चमकदार गोल लोगो */
+        .designer-logo {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background-color: white;
-            border: 2px solid #ffeb3b;
+            background: #ffffff;
+            border: 2px solid #d4af37; /* रॉयल गोल्ड बॉर्डर */
             display: flex;
             justify-content: center;
             align-items: center;
-            font-weight: bold;
-            color: #008069;
+            font-weight: 800;
+            color: #006755;
             font-size: 16px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
-        /* बिल्कुल बीच में मस्त और प्रीमियम डिज़ाइनदार नाम */
-        .vip-title-center {
-            font-size: 22px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            font-family: 'Georgia', serif; /* रॉयल लुक देने के लिए */
+        /* बिल्कुल बीच में बेहद मस्त, रॉयल और प्रीमियम डिज़ाइनदार नाम */
+        .designer-title-center {
+            font-size: 23px; 
+            font-weight: bold; 
+            letter-spacing: 3px; /* अक्षरों के बीच खूबसूरत दूरी */
+            font-family: 'Cinzel', 'Georgia', serif; /* प्योर रॉयल और क्लासिक लुक */
             color: #ffffff;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+            /* नाम को चमकाने के लिए डबल शैडो इफ़ेक्ट */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px rgba(255,235,59,0.3);
             flex: 1;
             text-align: center;
-            margin-right: 44px; /* लोगो के वजन को बराबर रखने के लिए ताकि नाम एकदम सेंटर में रहे */
+            margin-right: 44px; /* लोगो के वजन को बराबर सेंटर में रखने के लिए जादुई मार्जिन */
         }
 
         .dashboard-container { 
-            background: rgba(255, 255, 255, 0.96); /* हल्का ट्रांसपेरेंट ताकि नीचे का थीम भी हल्का दिखे और लिखावट भी एकदम साफ रहे */
+            background: rgba(255, 255, 255, 0.97); /* हल्का सा ट्रांसपेरेंट ताकि बैकग्राउंड थीम भी दिखे और लिखावट भी एकदम साफ चमके */
             padding: 30px; 
             border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
             width: 100%; 
             max-width: 450px; 
             border: 1px solid #e1e9eb;
@@ -128,7 +133,7 @@
             display: inline-block;
         }
 
-        /* सर्विस लिस्ट एरिया */
+        /* सर्विस लिस्ट送 एरिया */
         .services-section { 
             text-align: left; 
             border-top: 1px solid #eee; 
@@ -203,9 +208,9 @@
 </head>
 <body>
 
-    <div class="top-vip-bar">
-        <div class="vip-logo">MG</div>
-        <div class="vip-title-center">MG ASTROLOGY</div>
+    <div class="top-designer-bar">
+        <div class="designer-logo">MG</div>
+        <div class="designer-title-center">MG ASTROLOGY</div>
     </div>
 
     <div class="dashboard-container">
@@ -230,7 +235,7 @@
                 <li>🎓 शिक्षा और विदेश योग</li>
                 <li>✨ प्रभावी ज्योतिष उपाय</li>
                 <li>🏠 वास्तु दोष निवारण</li>
-                <li>⚖️ कानूनी विवाद और court केस</li>
+                <li>⚖️ कानूनी विवाद और कोर्ट केस</li>
                 <li>👨‍👩‍👧‍👦 पारिवारिक शांति और गृह क्लेश</li>
                 <li>🧿 नजर दोष और सुरक्षा कवच</li>
                 <li>👶 संतान सुख और भविष्य</li>
@@ -256,7 +261,7 @@
                 <li>लॉगिन करते समय सही नाम और सक्रिय मोबाइल नंबर देना अनिवार्य है। गलत जानकारी पर तुरंत ब्लॉक कर दिया जाएगा।</li>
                 <li>चैट बॉक्स में किसी भी प्रकार की अभद्र भाषा या फालतू बहस करने पर बिना किसी पूर्व सूचना के तुरंत स्थायी रूप से ब्लॉक (Block) कर दिया जाएगा।</li>
                 <li style="font-weight: bold; color: #d32f2f;">एक बार शुल्क जमा होने के बाद किसी भी परिस्थिति में फीस रिफंड (वापस) नहीं की जाएगी। परामर्श केवल आपके द्वारा दिए गए जन्म विवरण के आधार पर ही मान्य होगा।</li>
-                <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर,转换 उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
+                <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
             </ol>
             <button class="close-modal-btn" onclick="closeTerms()">शर्तें स्वीकार हैं / बंद करें</button>
         </div>
