@@ -99,7 +99,6 @@
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: #efeae2;
-            /* एडमिन चैट रूम के पीछे हल्का ज्योतिष सितारों वाला प्यारा थीम */
             background-image: 
                 radial-gradient(rgba(0, 128, 105, 0.05) 1.5px, transparent 1.5px), 
                 radial-gradient(rgba(212, 175, 55, 0.06) 1px, transparent 1px);
@@ -247,7 +246,7 @@
 
         var selectedCustomerId = null;
         var selectedCustomerName = "";
-        var lastMessagesCounts = {}; // हर रूम के मैसेज काउंट को ट्रैक करने के लिए
+        var lastMessagesCounts = {}; 
         var initialLoadDone = false; 
 
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
@@ -256,12 +255,11 @@
             Notification.requestPermission();
         }
 
-        // 🚀 असली डायनामिक लिस्टिंग सिस्टम - जो सभी कमरों को लाइव स्कैन करेगा
+        // 🚀 सुधरा हुआ लाइव लिसनर - जो हर फोल्डर के अंदर के बदलावों को बिना मिस किए पकड़ेगा
         database.ref('chats').on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
             
-            // पुरानी लिस्ट साफ करें
             customerListWindow.innerHTML = '';
             
             if (snapshot.exists()) {
@@ -274,19 +272,18 @@
                     hasRooms = true;
                     var roomData = rooms[roomKey];
                     var keys = Object.keys(roomData);
-                    
-                    // ग्राहक का नाम निकालने की कोशिश, नहीं तो 'नंबर रूम' दिखाएगा
                     var lastMsg = roomData[keys[keys.length - 1]];
-                    var displayTitle = "📱 रूम: " + roomKey;
                     
-                    // अगर हमारे पास इस रूम के मैसेजेस की संख्या पहले से कम है, तो घंटी बजाओ
+                    var displayTitle = "📱 कस्टमर नंबर: " + roomKey;
+                    
+                    // घंटी बजाने का अचूक लॉजिक
                     if (initialLoadDone) {
                         var currentCount = keys.length;
                         var oldCount = lastMessagesCounts[roomKey] || 0;
                         if (currentCount > oldCount && lastMsg && lastMsg.sender === "customer") {
-                            notificationSound.play().catch(e => console.log("Sound unlock error"));
+                            notificationSound.play().catch(e => console.log("Sound error"));
                             if (Notification.permission === "granted") {
-                                new Notification("MG ASTROLOGY", { body: "नया संदेश आया है: " + roomKey });
+                                new Notification("MG ASTROLOGY", { body: "नया संदेश: " + roomKey });
                             }
                         }
                     }
@@ -299,7 +296,7 @@
                         item.classList.add('selected');
                     }
                     
-                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">अंतिम संदेश: ${lastMsg ? (lastMsg.fileType === 'image' ? '📸 फोटो' : lastMsg.text.substring(0, 20)) : ''}</span>`;
+                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${lastMsg ? (lastMsg.fileType === 'image' ? '📸 फोटो भेजी है' : lastMsg.text.substring(0, 25)) : ''}</span>`;
                     
                     item.onclick = function() {
                         selectCustomer("room_" + roomKey, roomKey);
@@ -309,9 +306,7 @@
                     customerListWindow.appendChild(item);
                 });
 
-                initialLoadDone = true;
-
-                // अगर कोई चैट खुली हुई है, तो उसे लाइव अपडेट रखें
+                // अगर कोई चैट रूम खुला हुआ है, तो उसे लाइव अपडेट रखें
                 if(selectedCustomerId) {
                     var openRoomKey = selectedCustomerId.replace("room_", "");
                     if(rooms[openRoomKey]) {
@@ -320,15 +315,23 @@
                 }
 
                 if(!hasRooms) {
-                    customerListWindow.appendChild(emptyNotice);
-                    if(emptyNotice) emptyNotice.style.display = 'block';
+                    showEmptyScreen(emptyNotice);
                 }
+                initialLoadDone = true;
             } else {
-                customerListWindow.appendChild(emptyNotice);
-                if(emptyNotice) emptyNotice.style.display = 'block';
+                showEmptyScreen(emptyNotice);
                 initialLoadDone = true;
             }
         });
+
+        function showEmptyScreen(emptyNotice) {
+            const customerListWindow = document.getElementById('customerListWindow');
+            customerListWindow.innerHTML = '';
+            if(emptyNotice) {
+                customerListWindow.appendChild(emptyNotice);
+                emptyNotice.style.display = 'block';
+            }
+        }
 
         function loadLiveMessages(messagesData) {
             var chatWindow = document.getElementById('adminChatWindow');
@@ -377,11 +380,10 @@
             document.getElementById('mainHeaderTitle').innerText = "चयनित: " + name;
         }
 
-        // सिर्फ चुने हुए ग्राहक का फोल्डर उड़ाने वाला सिस्टम
         function blockSelectedCustomer() {
             if(selectedCustomerId) {
                 var actualRoomKey = selectedCustomerId.replace("room_", "");
-                var confirmBlock = confirm("क्या आप सचमुच ग्राहक नंबर " + actualRoomKey + " का पूरा फोल्डर और चैट हमेशा के लिए डिलीट करना चाहते हैं?");
+                var confirmBlock = confirm("क्या आप सचमुच ग्राहक नंबर " + actualRoomKey + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
                 if(confirmBlock) {
                     database.ref('chats/' + actualRoomKey).remove().then(() => {
                         alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
@@ -472,7 +474,6 @@
             });
         }
 
-        // सर्च बॉक्स फ़िल्टर सिस्टम
         function filterCustomers() {
             var input = document.getElementById('adminSearchInput').value.toLowerCase();
             var items = document.getElementsByClassName('customer-item');
@@ -486,7 +487,6 @@
             }
         }
 
-        // पहले टच पर साउंड अनलॉक करने के लिए सुरक्षित कोड
         document.body.addEventListener('click', function() {
             if(notificationSound) {
                 notificationSound.play().then(() => {
