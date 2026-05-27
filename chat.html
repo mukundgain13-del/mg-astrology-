@@ -257,10 +257,33 @@
         const custPhone = localStorage.getItem('currentCustPhone') || "0000000000";
         const myRoomId = custPhone; 
 
-        // लॉगिन करते ही एडमिन पैनल के लिए नाम और नंबर डेटाबेस में सेव करना
-        database.ref('chats/' + myRoomId).child('cust_profile').set({
-            name: custName,
-            phone: custPhone
+        // 🚀 नया लिसनर: चेक करें कि क्या ग्राहक का कोई पुराना वास्तविक मैसेज है
+        database.ref('chats/' + myRoomId).once('value', (snapshot) => {
+            var hasRealMessages = false;
+            
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach((key) => {
+                    if(key !== 'cust_profile' && data[key] && data[key].sender) {
+                        hasRealMessages = true;
+                    }
+                });
+            }
+
+            // यदि कोई पुराना मैसेज नहीं है, तो तुरंत नया कस्टमाइज्ड फॉर्मेट दिखाएँ
+            if(!hasRealMessages) {
+                const chatBox = document.getElementById('chatBox');
+                const welcomeDiv = document.createElement('div');
+                welcomeDiv.className = "message msg-left";
+                welcomeDiv.innerHTML = "नमस्ते! MG ASTROLOGY में आपका स्वागत है। 🙏<br><br>" +
+                                       "कृपया अपनी पूरी डिटेल्स नीचे दिए गए फॉर्मेट में टाइप करके भेजें ताकि आपकी रिपोर्ट तैयार की जा सके:<br><br>" +
+                                       "🔸 <b>अपना नाम:</b> <br>" +
+                                       "🔸 <b>डेट ऑफ बर्थ (जन्म तिथि):</b> <br>" +
+                                       "🔸 <b>जन्म स्थान:</b> <br>" +
+                                       "🔸 <b>जन्म टाइम (समय):</b> <br><br>" +
+                                       "अपनी समस्या या विवरण भी साथ में लिख सकते हैं। हमारी टीम जल्द ही आपसे संपर्क करेगी।";
+                chatBox.appendChild(welcomeDiv);
+            }
         });
 
         // .on('child_added') लाइव रियल-टाइम सिंक कनेक्शन
@@ -269,8 +292,7 @@
             const msgKey = snapshot.key;
             const msg = snapshot.val();
             
-            // प्रोफाइल डेटा को मैसेज बॉक्स में प्रिंट होने से रोकें
-            if(msgKey === 'cust_profile' || !msg.sender) return;
+            if(msgKey === 'cust_profile' || !msg || !msg.sender) return;
 
             const msgDiv = document.createElement('div');
             msgDiv.id = "msg_" + msgKey;
@@ -332,33 +354,6 @@
             }
         });
 
-        // 🚀 नया कस्टमाइज्ड स्वागत संदेश फॉर्मेट: जब तक कोई पुराना मैसेज नहीं होगा, यह नया फॉर्मेट दिखेगा
-        database.ref('chats/' + myRoomId).once('value', (snapshot) => {
-            var hasMessages = false;
-            if(snapshot.exists()) {
-                const data = snapshot.val();
-                Object.keys(data).forEach((key) => {
-                    if(key !== 'cust_profile' && data[key].sender) {
-                        hasMessages = true;
-                    }
-                });
-            }
-
-            if(!hasMessages) {
-                const chatBox = document.getElementById('chatBox');
-                const welcomeDiv = document.createElement('div');
-                welcomeDiv.className = "message msg-left";
-                welcomeDiv.innerHTML = "नमस्ते! MG ASTROLOGY में आपका स्वागत है। 🙏<br><br>" +
-                                       "कृपया अपनी पूरी डिटेल्स नीचे दिए गए फॉर्मेट में टाइप करके भेजें ताकि आपकी रिपोर्ट तैयार की जा सके:<br><br>" +
-                                       "🔸 <b>अपना नाम:</b> <br>" +
-                                       "🔸 <b>डेट ऑफ बर्थ (जन्म तिथि):</b> <br>" +
-                                       "🔸 <b>जन्म स्थान:</b> <br>" +
-                                       "🔸 <b>जन्म टाइम (समय):</b> <br><br>" +
-                                       "अपनी समस्या या विवरण भी साथ में लिख सकते हैं। हमारी टीम जल्द ही आपसे संपर्क करेगी।";
-                chatBox.appendChild(welcomeDiv);
-            }
-        });
-
         function sendMessage() {
             const input = document.getElementById('msgInput');
             const text = input.value.trim();
@@ -370,6 +365,12 @@
                 timestamp: Date.now(),
                 fileType: "text"
             };
+
+            // पहला मैसेज भेजते ही प्रोफाइल और नाम एडमिन पैनल के लिए दर्ज होगा
+            database.ref('chats/' + myRoomId).child('cust_profile').set({
+                name: custName,
+                phone: custPhone
+            });
 
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
                 input.value = "";
