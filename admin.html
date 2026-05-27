@@ -248,7 +248,7 @@
         var selectedCustomerName = "";
         var lastMessagesCounts = {}; 
         var initialLoadDone = false; 
-        var currentLiveRef = null; // चालू चैट के लाइव लिसनर को ट्रैक करने के लिए
+        var currentLiveRef = null; 
 
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
 
@@ -256,7 +256,7 @@
             Notification.requestPermission();
         }
 
-        // 🚀 ग्राहकों की मुख्य लिस्ट को लोड और सिंक करने का कोड
+        // 🚀 अपडेटेड लिस्ट लोड: अब यह फायरबेस से नाम और नंबर दोनों एक साथ लोड करेगा
         database.ref('chats').on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
@@ -275,9 +275,19 @@
                     hasRooms = true;
                     var roomData = rooms[roomKey];
                     var keys = Object.keys(roomData);
-                    var lastMsg = roomData[keys[keys.length - 1]];
                     
-                    var displayTitle = "📱 कस्टमर नंबर: " + roomKey;
+                    // आखरी मैसेज निकालते समय प्रोफाइल डेटा को छोड़ दें
+                    var lastMsg = null;
+                    for(var i = keys.length - 1; i >= 0; i--) {
+                        if(keys[i] !== 'cust_profile' && roomData[keys[i]].sender) {
+                            lastMsg = roomData[keys[i]];
+                            break;
+                        }
+                    }
+                    
+                    // ग्राहक का नाम प्रोफाइल से निकालें, नहीं मिलने पर "नया ग्राहक" दिखाएँ
+                    var savedName = (roomData.cust_profile && roomData.cust_profile.name) ? roomData.cust_profile.name : "नया ग्राहक";
+                    var displayTitle = savedName + " (" + roomKey + ")";
                     
                     if (initialLoadDone) {
                         var currentCount = keys.length;
@@ -285,7 +295,7 @@
                         if (currentCount > oldCount && lastMsg && lastMsg.sender === "customer") {
                             notificationSound.play().catch(e => console.log("Sound error"));
                             if (Notification.permission === "granted") {
-                                new Notification("MG ASTROLOGY", { body: "नया संदेश: " + roomKey });
+                                new Notification("MG ASTROLOGY", { body: "नया संदेश: " + savedName });
                             }
                         }
                     }
@@ -298,10 +308,21 @@
                         item.classList.add('selected');
                     }
                     
-                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${lastMsg ? (lastMsg.fileType === 'image' ? '📸 फोटो भेजी है' : lastMsg.text.substring(0, 25)) : ''}</span>`;
+                    var msgPreview = "";
+                    if(lastMsg) {
+                        if(lastMsg.fileType === 'image' || lastMsg.text.startsWith('data:image')) {
+                            msgPreview = '📸 फोटो भेजी है';
+                        } else if(lastMsg.text.includes('<img')) {
+                            msgPreview = '📸 भुगतान चेतावनी / QR कोड';
+                        } else {
+                            msgPreview = lastMsg.text.substring(0, 25);
+                        }
+                    }
+                    
+                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
                     
                     item.onclick = function() {
-                        selectCustomer("room_" + roomKey, roomKey);
+                        selectCustomer("room_" + roomKey, savedName);
                         openCustomerChat(roomKey);
                     };
                     
@@ -327,44 +348,55 @@
             }
         }
 
-        // 🚀 कनेक्शन पक्का: अब एडमिन स्क्रीन पर मैसेज तुरंत बिना बाहर आए लाइव जुड़ेंगे
         function listenToLiveMessages(roomKey) {
             var chatWindow = document.getElementById('adminChatWindow');
             chatWindow.innerHTML = ''; 
 
             if (currentLiveRef) {
-                currentLiveRef.off(); // पुराने ग्राहक का लाइव कनेक्शन बंद करें ताकि मिक्स न हो
+                currentLiveRef.off(); 
             }
 
             currentLiveRef = database.ref('chats/' + roomKey);
             
             currentLiveRef.on('child_added', (snapshot) => {
+                var msgKey = snapshot.key;
                 var msg = snapshot.val();
-                if (msg) {
-                    var newMsg = document.createElement('div');
-                    
-                    if(msg.sender === "admin") {
-                        newMsg.className = "message msg-right";
-                        if(msg.text.includes('<img') || msg.text.startsWith('data:image')) {
-                            if(msg.text.startsWith('data:image')) {
-                                newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin">`;
-                            } else {
-                                newMsg.innerHTML = msg.text;
-                            }
+                
+                // प्रोफाइल डेटा को चैट मैसेजेस में दिखाने से रोकें
+                if (msgKey === 'cust_profile' || !msg || !msg.sender) return;
+
+                var newMsg = document.createElement('div');
+                newMsg.id = "admin_msg_" + msgKey;
+                
+                if(msg.sender === "admin") {
+                    newMsg.className = "message msg-right";
+                    if(msg.text.includes('<img') || msg.text.startsWith('data:image')) {
+                        if(msg.text.startsWith('data:image')) {
+                            newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin">`;
                         } else {
-                            newMsg.innerText = msg.text;
+                            newMsg.innerHTML = msg.text;
                         }
                     } else {
-                        newMsg.className = "message msg-left";
-                        if(msg.fileType === "image" || msg.text.startsWith('data:image')) {
-                            newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin" style="cursor:pointer;" onclick="window.open('${msg.text}', '_blank')">`;
-                        } else {
-                            newMsg.innerText = msg.text;
-                        }
+                        newMsg.innerText = msg.text;
                     }
-                    
-                    chatWindow.appendChild(newMsg);
-                    chatWindow.scrollTop = chatWindow.scrollHeight; // मैसेज आते ही स्क्रीन ऑटोमैटिक नीचे जाएगी
+                } else {
+                    newMsg.className = "message msg-left";
+                    if(msg.fileType === "image" || msg.text.startsWith('data:image')) {
+                        newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin" style="cursor:pointer;" onclick="window.open('${msg.text}', '_blank')">`;
+                    } else {
+                        newMsg.innerText = msg.text;
+                    }
+                }
+                
+                chatWindow.appendChild(newMsg);
+                chatWindow.scrollTop = chatWindow.scrollHeight; 
+            });
+
+            // यदि ग्राहक कोई संदेश डिलीट करता है तो एडमिन स्क्रीन से भी लाइव गायब होगा
+            currentLiveRef.on('child_removed', (snapshot) => {
+                var deletedDiv = document.getElementById("admin_msg_" + snapshot.key);
+                if(deletedDiv) {
+                    deletedDiv.remove();
                 }
             });
         }
@@ -386,7 +418,7 @@
         function blockSelectedCustomer() {
             if(selectedCustomerId) {
                 var actualRoomKey = selectedCustomerId.replace("room_", "");
-                var confirmBlock = confirm("क्या आप सचमुच ग्राहक नंबर " + actualRoomKey + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
+                var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + selectedCustomerName + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
                 if(confirmBlock) {
                     database.ref('chats/' + actualRoomKey).remove().then(() => {
                         alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
@@ -403,14 +435,14 @@
         }
 
         function openCustomerChat(roomKey) {
-            document.getElementById('chattingWithTitle').innerText = "कस्टमर: " + roomKey;
+            document.getElementById('chattingWithTitle').innerText = "कस्टमर: " + selectedCustomerName;
             document.getElementById('fullChatWindow').style.display = 'flex';
-            listenToLiveMessages(roomKey); // लाइव मैसेजेस सुनना चालू करें
+            listenToLiveMessages(roomKey); 
         }
 
         function closeCustomerChat() {
             if (currentLiveRef) {
-                currentLiveRef.off(); // चैट बंद होने पर लिसनर हटाएँ ताकि बैटरी/डेटा बचे
+                currentLiveRef.off(); 
                 currentLiveRef = null;
             }
             document.getElementById('fullChatWindow').style.display = 'none';
