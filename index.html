@@ -8,7 +8,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
         body { 
-            /* हल्का और क्लासी ज्योतिषीय सितारों वाला प्रीमियम बैकग्राउंड थीम */
             background-color: #efeae2; 
             background-image: 
                 radial-gradient(rgba(0, 128, 105, 0.07) 1.5px, transparent 1.5px), 
@@ -20,33 +19,31 @@
             align-items: center; 
             min-height: 100vh; 
             padding: 15px;
-            padding-top: 85px; /* ऊपर की फिक्स डिज़ाइनर पट्टी के लिए सुरक्षित जगह */
+            padding-top: 85px; 
         }
 
-        /* 🔝 ऊपर की वीआईपी डिज़ाइनर फिक्स पट्टी (Sticky Branded Header) */
         .top-designer-bar {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(135deg, #005e4e 0%, #008069 100%); /* प्रीमियम ग्रेडिएंट शेड */
+            background: linear-gradient(135deg, #005e4e 0%, #008069 100%); 
             color: white;
             padding: 12px 20px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
-            border-bottom: 2px solid #d4af37; /* नीचे पतली गोल्डन प्रीमियम लाइन */
+            border-bottom: 2px solid #d4af37; 
             z-index: 999;
         }
 
-        /* बिना चाँद वाला एकदम साफ, प्रोफेशनल और चमकदार गोल लोगो */
         .designer-logo {
             width: 44px;
             height: 44px;
             border-radius: 50%;
             background: #ffffff;
-            border: 2px solid #d4af37; /* रॉयल गोल्ड बॉर्डर */
+            border: 2px solid #d4af37; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -57,22 +54,20 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
         }
 
-        /* बिल्कुल बीच में बेहद मस्त, रॉयल और प्रीमियम डिज़ाइनदार नाम */
         .designer-title-center {
             font-size: 23px; 
             font-weight: bold; 
-            letter-spacing: 3px; /* अक्षरों के बीच खूबसूरत दूरी */
-            font-family: 'Cinzel', 'Georgia', serif; /* प्योर रॉयल और क्लासिक लुक */
+            letter-spacing: 3px; 
+            font-family: 'Cinzel', 'Georgia', serif; 
             color: #ffffff;
-            /* नाम को चमकाने के लिए डबल शैडो इफ़ेक्ट */
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5), 0 0 8px rgba(255,235,59,0.3);
             flex: 1;
             text-align: center;
-            margin-right: 44px; /* लोगो के वजन को बराबर सेंटर में रखने के लिए जादुई मार्जिन */
+            margin-right: 44px; 
         }
 
         .dashboard-container { 
-            background: rgba(255, 255, 255, 0.97); /* हल्का सा ट्रांसपेरेंट ताकि बैकग्राउंड थीम भी दिखे और लिखावट भी एकदम साफ चमके */
+            background: rgba(255, 255, 255, 0.97); 
             padding: 30px; 
             border-radius: 12px; 
             box-shadow: 0 4px 20px rgba(0,0,0,0.08); 
@@ -83,7 +78,6 @@
             z-index: 10;
         }
 
-        /* लॉगिन बॉक्स */
         .login-box { 
             border: 1.5px solid #e1e9eb; 
             border-radius: 10px; 
@@ -92,7 +86,6 @@
             background-color: #f8f9fa;
         }
 
-        /* इनपुट फील्ड्स */
         .login-input { 
             width: 100%; 
             padding: 14px; 
@@ -105,7 +98,6 @@
         }
         .login-input:focus { border-color: #00a884; }
 
-        /* Login या Chat का बटन */
         .login-btn { 
             width: 100%; 
             padding: 14px; 
@@ -120,7 +112,6 @@
         }
         .login-btn:hover { background-color: #008069; }
 
-        /* टर्म्स एंड कंडीशंस का सुंदर बटन */
         .terms-btn {
             background: none;
             border: none;
@@ -133,77 +124,23 @@
             display: inline-block;
         }
 
-        /* सर्विस लिस्ट送 एरिया */
         .services-section { 
             text-align: left; 
             border-top: 1px solid #eee; 
             padding-top: 20px;
         }
 
-        .welcome-text { 
-            font-size: 18px; 
-            color: #333; 
-            font-weight: bold; 
-            margin-bottom: 5px; 
-            text-align: center; 
-        }
+        .welcome-text { font-size: 18px; color: #333; font-weight: bold; margin-bottom: 5px; text-align: center; }
+        .sub-welcome-text { font-size: 16px; color: #008069; font-weight: bold; text-align: center; margin-bottom: 15px; }
+        .services-list { list-style: none; font-size: 16px; color: #4a4a4a; line-height: 2; margin-bottom: 20px; }
+        .contact-info-footer { border-top: 1px dashed #ccc; padding-top: 15px; font-size: 16px; color: #333; font-weight: bold; line-height: 1.6; text-align: left; }
 
-        .sub-welcome-text {
-            font-size: 16px;
-            color: #008069;
-            font-weight: bold;
-            text-align: center;
-            margin-bottom: 15px;
-        }
-
-        .services-list { 
-            list-style: none; 
-            font-size: 16px; 
-            color: #4a4a4a; 
-            line-height: 2; 
-            margin-bottom: 20px;
-        }
-
-        /* सबसे नीचे संपर्क जानकारी */
-        .contact-info-footer {
-            border-top: 1px dashed #ccc;
-            padding-top: 15px;
-            font-size: 16px;
-            color: #333;
-            font-weight: bold;
-            line-height: 1.6;
-            text-align: left;
-        }
-
-        /* पॉप-अप बॉक्स (Modal) का स्टाईल */
-        .modal {
-            display: none; 
-            position: fixed; 
-            z-index: 1000; 
-            left: 0; top: 0; 
-            width: 100%; height: 100%; 
-            background-color: rgba(0,0,0,0.5); 
-            justify-content: center; 
-            align-items: center;
-        }
-        .modal-content {
-            background-color: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            width: 92%; max-width: 420px; 
-            text-align: left;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: white; padding: 25px; border-radius: 10px; width: 92%; max-width: 420px; text-align: left; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         .modal-title { font-size: 18px; font-weight: bold; color: #d32f2f; margin-bottom: 15px; }
         .modal-list { padding-left: 20px; font-size: 14px; color: #333; line-height: 1.7; }
         .modal-list li { margin-bottom: 10px; }
-        .close-modal-btn {
-            display: block; width: 100%; padding: 12px; 
-            background-color: #00a884; color: white; 
-            border: none; border-radius: 6px; 
-            font-size: 16px; font-weight: bold; 
-            cursor: pointer; margin-top: 15px; text-align: center;
-        }
+        .close-modal-btn { display: block; width: 100%; padding: 12px; background-color: #00a884; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
     </style>
 </head>
 <body>
@@ -214,7 +151,6 @@
     </div>
 
     <div class="dashboard-container">
-
         <div class="login-box">
             <input type="tel" id="custPhone" class="login-input" placeholder="Mo-No. (अपना mobile नंबर लिखें)" required>
             <input type="text" id="custName" class="login-input" placeholder="Name (अपना पूरा नाम लिखें)" required>
@@ -226,7 +162,6 @@
         <div class="services-section">
             <div class="welcome-text">नमस्ते! MG Astrology में आपका स्वागत है। 🙏</div>
             <div class="sub-welcome-text">​🌟 हमारी विशेष पेड (Paid) ज्योतिष सेवाएं 🌟</div>
-            
             <ul class="services-list">
                 <li>📜 विस्तृत कुंडली विश्लेषण</li>
                 <li>💍 रत्न एवं यंत्र परामर्श</li>
@@ -250,7 +185,6 @@
             फीस और संपर्क जानकारी:<br>
             📞 +91 8006664333
         </div>
-
     </div>
 
     <div class="modal" id="termsModal">
@@ -268,14 +202,10 @@
     </div>
 
     <script>
-        function openTerms() {
-            document.getElementById('termsModal').style.display = 'flex';
-        }
-        function closeTerms() {
-            document.getElementById('termsModal').style.display = 'none';
-        }
+        function openTerms() { document.getElementById('termsModal').style.display = 'flex'; }
+        function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
 
-        // 🚀 हर ग्राहक को उसके अपने नंबर वाले पर्सनल रूम में भेजने का नया फुल-प्रूफ लॉजिक
+        // 🚀 फाइनल सुधार: चाबियों के नाम चैट पेज से मिला दिए गए हैं
         function loginAndGo() {
             var phone = document.getElementById('custPhone').value.trim();
             var name = document.getElementById('custName').value.trim();
@@ -285,16 +215,15 @@
                 return;
             }
             
-            // मोबाइल नंबर से फालतू खाली जगह या विशेष चिन्ह हटाकर शुद्ध नंबर रखने के लिए
             var cleanPhone = phone.replace(/[^0-9]/g, "");
             
-            localStorage.setItem('customerName', name);
-            localStorage.setItem('customerPhone', cleanPhone);
+            // यहाँ चाबियाँ 'currentCustName' और 'currentCustPhone' रखी गई हैं
+            localStorage.setItem('currentCustName', name);
+            localStorage.setItem('currentCustPhone', cleanPhone);
             
-            // अब ग्राहक किसी कॉमन पेज पर नहीं, सीधे अपने पर्सनल नंबर वाले यूनिक लिंक पर रीडायरेक्ट होगा
-            window.location.href = "chat.html?room=" + cleanPhone;
+            // सीधा चैट पेज पर भेजें
+            window.location.href = "chat.html";
         }
     </script>
-
 </body>
 </html>
