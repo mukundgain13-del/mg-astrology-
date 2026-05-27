@@ -2,7 +2,7 @@
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MG ASTROLOGY - Customer Chat</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
@@ -35,9 +35,7 @@
         }
 
         @media (max-width: 600px) {
-            .chat-container {
-                max-width: 100%;
-            }
+            .chat-container { max-width: 100%; }
         }
 
         .chat-header {
@@ -80,34 +78,10 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .header-info {
-            flex: 1;
-            margin-left: 12px;
-        }
-
-        .header-name {
-            font-size: 16px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .header-status {
-            font-size: 12px;
-            color: #e0f2f1;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 2px;
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #00e676;
-            border-radius: 50%;
-            display: inline-block;
-            animation: pulse 2s infinite;
-        }
+        .header-info { flex: 1; margin-left: 12px; }
+        .header-name { font-size: 16px; font-weight: 600; letter-spacing: 0.5px; }
+        .header-status { font-size: 12px; color: #e0f2f1; display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+        .status-dot { width: 8px; height: 8px; background-color: #00e676; border-radius: 50%; display: inline-block; animation: pulse 2s infinite; }
 
         @keyframes pulse {
             0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
@@ -141,28 +115,41 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .msg-left {
-            background: white;
-            color: #333;
-            align-self: flex-start;
-            border-top-left-radius: 0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        .msg-left { background: white; color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-right { background: #d9fdd3; color: #111; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        
+        .msg-meta-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            gap: 10px;
+        }
+        .msg-time { font-size: 10px; color: #667781; }
+        
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #d32f2f;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 2px 5px;
+            font-weight: bold;
         }
 
-        .msg-right {
-            background: #d9fdd3;
-            color: #111;
-            align-self: flex-end;
-            border-top-right-radius: 0;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-
-        .msg-time {
-            font-size: 10px;
-            color: #667781;
-            text-align: right;
-            margin-top: 4px;
-            display: block;
+        .download-btn-style {
+            background-color: #008069;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
         }
 
         .qr-image-style, .chat-img-customer {
@@ -223,9 +210,7 @@
             align-items: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             outline: none;
-            transition: background-color 0.2s;
         }
-        .send-btn:active { background-color: #008f72; }
     </style>
 </head>
 <body>
@@ -236,7 +221,7 @@
             <a href="index.html" class="back-btn">←</a>
             <div class="designer-logo">MG</div>
             <div class="header-info">
-                <div class="header-name">MG ASTROLOGER Support</div>
+                <div class="header-name">MG ASTROLOGY</div>
                 <div class="header-status"><span class="status-dot"></span> ऑनलाइन सहायता</div>
             </div>
         </div>
@@ -272,51 +257,104 @@
         const custPhone = localStorage.getItem('currentCustPhone') || "0000000000";
         const myRoomId = custPhone; 
 
-        // 🚀 नया रास्ता: अब कस्टमर का मैसेज सीधे 'chats/कस्टमर_नंबर' फोल्डर के अंदर जाएगा
-        database.ref('chats/' + myRoomId).on('value', (snapshot) => {
+        // लॉगिन करते ही एडमिन पैनल के लिए नाम और नंबर डेटाबेस में सेव करना
+        database.ref('chats/' + myRoomId).child('cust_profile').set({
+            name: custName,
+            phone: custPhone
+        });
+
+        // .on('child_added') लाइव रियल-टाइम सिंक कनेक्शन
+        database.ref('chats/' + myRoomId).on('child_added', (snapshot) => {
             const chatBox = document.getElementById('chatBox');
-            chatBox.innerHTML = ''; 
+            const msgKey = snapshot.key;
+            const msg = snapshot.val();
+            
+            // प्रोफाइल डेटा को मैसेज बॉक्स में प्रिंट होने से रोकें
+            if(msgKey === 'cust_profile' || !msg.sender) return;
 
-            if(snapshot.exists()){
-                const messagesData = snapshot.val();
-                Object.keys(messagesData).forEach((key) => {
-                    const msg = messagesData[key];
-                    const msgDiv = document.createElement('div');
-                    
-                    if(msg.sender === "customer") {
-                        msgDiv.className = "message msg-right";
-                        if(msg.fileType === "image") {
-                            msgDiv.innerHTML = `<img src="${msg.text}" class="chat-img-customer" onclick="window.open('${msg.text}', '_blank')">`;
-                        } else {
-                            msgDiv.innerText = msg.text;
-                        }
-                    } else {
-                        msgDiv.className = "message msg-left";
-                        if(msg.text.includes('<img') || msg.text.startsWith('data:image')) {
-                            if(msg.text.startsWith('data:image')) {
-                                msgDiv.innerHTML = `<img src="${msg.text}" class="chat-img-customer">`;
-                            } else {
-                                msgDiv.innerHTML = msg.text;
-                            }
-                        } else {
-                            msgDiv.innerText = msg.text;
-                        }
-                    }
-
-                    if(msg.timestamp) {
-                        const timeSpan = document.createElement('span');
-                        timeSpan.className = "msg-time";
-                        timeSpan.innerText = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                        msgDiv.appendChild(timeSpan);
-                    }
-
-                    chatBox.appendChild(msgDiv);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
+            const msgDiv = document.createElement('div');
+            msgDiv.id = "msg_" + msgKey;
+            
+            if(msg.sender === "customer") {
+                msgDiv.className = "message msg-right";
+                if(msg.fileType === "image") {
+                    msgDiv.innerHTML = `<img src="${msg.text}" class="chat-img-customer" onclick="window.open('${msg.text}', '_blank')">`;
+                } else {
+                    msgDiv.innerText = msg.text;
+                }
             } else {
+                msgDiv.className = "message msg-left";
+                if(msg.text.includes('<img') || msg.text.startsWith('data:image')) {
+                    if(msg.text.startsWith('data:image')) {
+                        msgDiv.innerHTML = `<img src="${msg.text}" class="chat-img-customer"><button class="download-btn-style" onclick="downloadImage('${msg.text}')">📥 डाउनलोड करें</button>`;
+                    } else {
+                        const srcMatch = msg.text.match(/src="([^"]+)"/);
+                        const imgSrc = srcMatch ? srcMatch[1] : '';
+                        msgDiv.innerHTML = msg.text + (imgSrc ? `<button class="download-btn-style" onclick="downloadImage('${imgSrc}')">📥 डाउनलोड करें</button>` : '');
+                    }
+                } else {
+                    msgDiv.innerText = msg.text;
+                }
+            }
+
+            const metaArea = document.createElement('div');
+            metaArea.className = "msg-meta-area";
+
+            if(msg.timestamp) {
+                const timeSpan = document.createElement('span');
+                timeSpan.className = "msg-time";
+                timeSpan.innerText = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                metaArea.appendChild(timeSpan);
+            }
+
+            if(msg.sender === "customer") {
+                const delBtn = document.createElement('button');
+                delBtn.className = "delete-btn";
+                delBtn.innerText = "🗑️ डिलीट";
+                delBtn.onclick = function() {
+                    if(confirm("क्या आप इस मैसेज को डिलीट करना चाहते हैं?")) {
+                        database.ref('chats/' + myRoomId + '/' + msgKey).remove();
+                    }
+                };
+                metaArea.appendChild(delBtn);
+            }
+
+            msgDiv.appendChild(metaArea);
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        });
+
+        // डिलीट होने पर स्क्रीन से लाइव गायब करने का लिसनर
+        database.ref('chats/' + myRoomId).on('child_removed', (snapshot) => {
+            const deletedDiv = document.getElementById("msg_" + snapshot.key);
+            if(deletedDiv) {
+                deletedDiv.remove();
+            }
+        });
+
+        // 🚀 नया कस्टमाइज्ड स्वागत संदेश फॉर्मेट: जब तक कोई पुराना मैसेज नहीं होगा, यह नया फॉर्मेट दिखेगा
+        database.ref('chats/' + myRoomId).once('value', (snapshot) => {
+            var hasMessages = false;
+            if(snapshot.exists()) {
+                const data = snapshot.val();
+                Object.keys(data).forEach((key) => {
+                    if(key !== 'cust_profile' && data[key].sender) {
+                        hasMessages = true;
+                    }
+                });
+            }
+
+            if(!hasMessages) {
+                const chatBox = document.getElementById('chatBox');
                 const welcomeDiv = document.createElement('div');
                 welcomeDiv.className = "message msg-left";
-                welcomeDiv.innerText = "नमस्ते " + custName + " जी! MG ASTROLOGY में आपका स्वागत है। अपनी समस्या या विवरण यहाँ लिखें, हमारी टीम जल्द ही आपसे संपर्क करेगी।";
+                welcomeDiv.innerHTML = "नमस्ते! MG ASTROLOGY में आपका स्वागत है। 🙏<br><br>" +
+                                       "कृपया अपनी पूरी डिटेल्स नीचे दिए गए फॉर्मेट में टाइप करके भेजें ताकि आपकी रिपोर्ट तैयार की जा सके:<br><br>" +
+                                       "🔸 <b>अपना नाम:</b> <br>" +
+                                       "🔸 <b>डेट ऑफ बर्थ (जन्म तिथि):</b> <br>" +
+                                       "🔸 <b>जन्म स्थान:</b> <br>" +
+                                       "🔸 <b>जन्म टाइम (समय):</b> <br><br>" +
+                                       "अपनी समस्या या विवरण भी साथ में लिख सकते हैं। हमारी टीम जल्द ही आपसे संपर्क करेगी।";
                 chatBox.appendChild(welcomeDiv);
             }
         });
@@ -336,6 +374,15 @@
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
                 input.value = "";
             });
+        }
+
+        function downloadImage(base64Data) {
+            const link = document.createElement('a');
+            link.href = base64Data;
+            link.download = 'MG_Astrology_Image_' + Date.now() + '.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         function openGallery() {
@@ -368,6 +415,5 @@
             if(e.key === 'Enter') { sendMessage(); }
         });
     </script>
-
 </body>
 </html>
