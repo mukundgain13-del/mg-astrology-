@@ -41,16 +41,17 @@
 
         .header-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
         
-        .top-block-btn {
-            display: none; 
-            background-color: #d32f2f;
-            color: white;
+        /* ➕ नया चैट शुरू करने का प्रीमियम बटन स्टाइल */
+        .new-chat-init-btn {
+            background-color: #d4af37;
+            color: #005e4e;
             border: none;
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 4px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
 
         .search-box-area {
@@ -87,11 +88,65 @@
             border-bottom: 1px solid #f0f2f5;
             cursor: pointer;
             display: flex;
-            flex-direction: column;
-            gap: 4px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
         }
         .customer-item:hover { background-color: #f5f6f6; }
         .customer-item.selected { background-color: #e1f5fe; border-left: 5px solid #0288d1; }
+
+        .customer-info-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .list-right-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 🔴 बाहर लिस्ट से ही पूरा फोल्डर उड़ाने वाला डिलीट बटन स्टाइल */
+        .list-delete-btn {
+            background-color: #fff0f0;
+            color: #d32f2f;
+            border: 1px solid #ffcdd2;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .list-delete-btn:hover { background-color: #d32f2f; color: white; }
+
+        /* 🟢 अनरीड काउंटर स्टाइल */
+        .unread-badge {
+            background-color: #25d366;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .new-client-tag {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 5px;
+            border: 1px solid #c8e6c9;
+        }
 
         /* FULL CHAT WINDOW */
         .full-chat-window {
@@ -128,9 +183,44 @@
             flex-direction: column;
             gap: 12px;
         }
-        .message { max-width: 85%; padding: 10px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
+        .message { max-width: 85%; padding: 10px 14px; border-radius: 8px; font-size: 15px; line-height: 1.5; word-wrap: break-word; position: relative; }
         .msg-right { background-color: rgba(217, 253, 211, 0.98); color: #333; align-self: flex-end; border-top-right-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
         .msg-left { background-color: rgba(255, 255, 255, 0.98); color: #333; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.15); }
+
+        .msg-meta-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 6px;
+            gap: 10px;
+        }
+        
+        /* अंदर से मैसेज/फोटो डिलीट करने का बटन */
+        .inner-delete-btn {
+            background: none;
+            border: none;
+            color: #d32f2f;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 2px 5px;
+            font-weight: bold;
+        }
+
+        /* डाउनलोड बटन स्टाइल */
+        .download-btn-style {
+            background-color: #008069;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: bold;
+        }
 
         .qr-image-style, .chat-img-admin {
             width: 100%;
@@ -192,8 +282,9 @@
     <div class="admin-container">
         
         <div class="admin-header">
-            <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY - ADMIN</div>
-            <button class="top-block-btn" id="topBlockBtn" onclick="blockSelectedCustomer()">🚫 Block करें</button>
+            <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY</div>
+            <!-- ➕ नया चैट शुरू करने का बटन -->
+            <button class="new-chat-init-btn" onclick="initiateNewChat()">➕ नया चैट</button>
         </div>
 
         <div class="search-box-area">
@@ -250,13 +341,15 @@
         var initialLoadDone = false; 
         var currentLiveRef = null; 
 
+        // 🔔 प्रीमियम व्हाट्सएप जैसी टोन लोड करना
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
 
+        // ब्राउज़र से लाइव पॉप-अप की अनुमति मांगना
         if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
 
-        // 🚀 अपडेटेड लिस्ट लोड: अब यह फायरबेस से नाम और नंबर दोनों एक साथ लोड करेगा
+        // 🚀 नया एडवांस लिसनर लॉजिक (ऑटो-सॉर्टिंग, न्यू टैग और लाइव अलर्ट के साथ)
         database.ref('chats').on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
@@ -268,6 +361,7 @@
                 
                 var rooms = snapshot.val();
                 var hasRooms = false;
+                var roomArray = [];
 
                 Object.keys(rooms).forEach((roomKey) => {
                     if(roomKey === 'apiKey' || roomKey === 'authDomain' || roomKey === 'projectId' || roomKey === 'storageBucket' || roomKey === 'messagingSenderId' || roomKey === 'appId' || roomKey === 'measurementId' || typeof rooms[roomKey] !== 'object') return;
@@ -276,55 +370,128 @@
                     var roomData = rooms[roomKey];
                     var keys = Object.keys(roomData);
                     
-                    // आखरी मैसेज निकालते समय प्रोफाइल डेटा को छोड़ दें
                     var lastMsg = null;
-                    for(var i = keys.length - 1; i >= 0; i--) {
-                        if(keys[i] !== 'cust_profile' && roomData[keys[i]].sender) {
-                            lastMsg = roomData[keys[i]];
-                            break;
+                    var unreadCount = 0;
+                    var lastTimestamp = 0;
+                    var isNewClient = true; 
+
+                    keys.forEach((key) => {
+                        if(key !== 'cust_profile' && roomData[key].sender) {
+                            var msg = roomData[key];
+                            lastMsg = msg;
+                            if(msg.timestamp > lastTimestamp) {
+                                lastTimestamp = msg.timestamp;
+                            }
+                            if(msg.sender === 'admin') {
+                                isNewClient = false;
+                            }
                         }
+                    });
+
+                    if (selectedCustomerId !== "room_" + roomKey) {
+                        keys.forEach((key) => {
+                            if(key !== 'cust_profile' && roomData[key].sender === 'customer') {
+                                var lastSeen = localStorage.getItem('lastSeen_' + roomKey) || 0;
+                                if(roomData[key].timestamp > lastSeen) {
+                                    unreadCount++;
+                                }
+                            }
+                        });
                     }
                     
-                    // ग्राहक का नाम प्रोफाइल से निकालें, नहीं मिलने पर "नया ग्राहक" दिखाएँ
                     var savedName = (roomData.cust_profile && roomData.cust_profile.name) ? roomData.cust_profile.name : "नया ग्राहक";
-                    var displayTitle = savedName + " (" + roomKey + ")";
                     
+                    roomArray.push({
+                        roomKey: roomKey,
+                        savedName: savedName,
+                        lastMsg: lastMsg,
+                        unreadCount: unreadCount,
+                        lastTimestamp: lastTimestamp,
+                        isNewClient: isNewClient,
+                        totalKeys: keys.length
+                    });
+                });
+
+                // 🔥 ऑटो-सॉर्टिंग: नया मैसेज आते ही क्लाइंट सबसे ऊपर आ जाएगा
+                roomArray.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+
+                roomArray.forEach((room) => {
+                    var displayTitle = room.savedName + " (" + room.roomKey + ")";
+                    
+                    // 🔔 व्हाट्सएप जैसा लाइव साउंड और स्क्रीन पॉप-अप नोटिफिकेशन ट्रिगर
                     if (initialLoadDone) {
-                        var currentCount = keys.length;
-                        var oldCount = lastMessagesCounts[roomKey] || 0;
-                        if (currentCount > oldCount && lastMsg && lastMsg.sender === "customer") {
+                        var oldCount = lastMessagesCounts[room.roomKey] || 0;
+                        if (room.totalKeys > oldCount && room.lastMsg && room.lastMsg.sender === "customer") {
                             notificationSound.play().catch(e => console.log("Sound error"));
+                            
+                            // अगर ब्राउज़र की अनुमति है तो मोबाइल स्क्रीन पर पॉप-अप बॉक्स भेजना
                             if (Notification.permission === "granted") {
-                                new Notification("MG ASTROLOGY", { body: "नया संदेश: " + savedName });
+                                var textBody = room.lastMsg.fileType === 'image' ? "📸 फोटो भेजी है" : room.lastMsg.text;
+                                new Notification("🔮 MG ASTROLOGY", { 
+                                    body: "नया संदेश (" + room.savedName + "): " + textBody.substring(0, 40),
+                                    icon: "https://i.imgur.com/your-logo-placeholder.png" // आप यहाँ अपने लोगो का लिंक डाल सकते हैं
+                                });
                             }
                         }
                     }
-                    lastMessagesCounts[roomKey] = keys.length;
+                    lastMessagesCounts[room.roomKey] = room.totalKeys;
 
                     var item = document.createElement('div');
                     item.className = "customer-item";
-                    item.id = "room_" + roomKey;
-                    if(selectedCustomerId === "room_" + roomKey) {
+                    item.id = "room_" + room.roomKey;
+                    if(selectedCustomerId === "room_" + room.roomKey) {
                         item.classList.add('selected');
                     }
                     
                     var msgPreview = "";
-                    if(lastMsg) {
-                        if(lastMsg.fileType === 'image' || lastMsg.text.startsWith('data:image')) {
+                    if(room.lastMsg) {
+                        if(room.lastMsg.fileType === 'image' || room.lastMsg.text.startsWith('data:image')) {
                             msgPreview = '📸 फोटो भेजी है';
-                        } else if(lastMsg.text.includes('<img')) {
+                        } else if(room.lastMsg.text.includes('<img')) {
                             msgPreview = '📸 भुगतान चेतावनी / QR कोड';
                         } else {
-                            msgPreview = lastMsg.text.substring(0, 25);
+                            msgPreview = room.lastMsg.text.substring(0, 25);
                         }
                     }
                     
-                    item.innerHTML = `<strong>🔮 ${displayTitle}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
+                    var newTagHtml = room.isNewClient ? `<span class="new-client-tag">NEW</span>` : '';
+
+                    var leftBox = document.createElement('div');
+                    leftBox.className = "customer-info-box";
+                    leftBox.innerHTML = `<strong>🔮 ${displayTitle} ${newTagHtml}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
                     
-                    item.onclick = function() {
-                        selectCustomer("room_" + roomKey, savedName);
-                        openCustomerChat(roomKey);
+                    leftBox.onclick = function() {
+                        localStorage.setItem('lastSeen_' + room.roomKey, Date.now());
+                        selectCustomer("room_" + room.roomKey, room.savedName);
+                        openCustomerChat(room.roomKey);
                     };
+                    item.appendChild(leftBox);
+
+                    var rightArea = document.createElement('div');
+                    rightArea.className = "list-right-area";
+
+                    if(room.unreadCount > 0) {
+                        var badge = document.createElement('div');
+                        badge.className = "unread-badge";
+                        badge.innerText = room.unreadCount;
+                        rightArea.appendChild(badge);
+                    }
+
+                    // 🚀 बाहर लिस्ट में ही डायरेक्ट पूरा फोल्डर उड़ाने का डिलीट बटन
+                    var delFolderBtn = document.createElement('button');
+                    delFolderBtn.className = "list-delete-btn";
+                    delFolderBtn.innerText = "🗑️ डिलीट";
+                    delFolderBtn.onclick = function(e) {
+                        e.stopPropagation(); 
+                        var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + room.savedName + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
+                        if(confirmBlock) {
+                            database.ref('chats/' + room.roomKey).remove().then(() => {
+                                alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
+                            });
+                        }
+                    };
+                    rightArea.appendChild(delFolderBtn);
+                    item.appendChild(rightArea);
                     
                     customerListWindow.appendChild(item);
                 });
@@ -348,13 +515,12 @@
             }
         }
 
+        // 🚀 अंदर से मैसेज डिलीट और कस्टमर फोटो डाउनलोड लॉजिक
         function listenToLiveMessages(roomKey) {
             var chatWindow = document.getElementById('adminChatWindow');
             chatWindow.innerHTML = ''; 
 
-            if (currentLiveRef) {
-                currentLiveRef.off(); 
-            }
+            if (currentLiveRef) { currentLiveRef.off(); }
 
             currentLiveRef = database.ref('chats/' + roomKey);
             
@@ -362,7 +528,6 @@
                 var msgKey = snapshot.key;
                 var msg = snapshot.val();
                 
-                // प्रोफाइल डेटा को चैट मैसेजेस में दिखाने से रोकें
                 if (msgKey === 'cust_profile' || !msg || !msg.sender) return;
 
                 var newMsg = document.createElement('div');
@@ -382,17 +547,41 @@
                 } else {
                     newMsg.className = "message msg-left";
                     if(msg.fileType === "image" || msg.text.startsWith('data:image')) {
-                        newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin" style="cursor:pointer;" onclick="window.open('${msg.text}', '_blank')">`;
+                        newMsg.innerHTML = `<img src="${msg.text}" class="chat-img-admin"><button class="download-btn-style" onclick="downloadCustomerImage('${msg.text}')">📥 डाउनलोड करें</button>`;
                     } else {
                         newMsg.innerText = msg.text;
                     }
                 }
+
+                var metaArea = document.createElement('div');
+                metaArea.className = "msg-meta-area";
+
+                if(msg.timestamp) {
+                    var timeSpan = document.createElement('span');
+                    timeSpan.style.fontSize = "10px";
+                    timeSpan.style.color = "#667781";
+                    timeSpan.innerText = new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    metaArea.appendChild(timeSpan);
+                }
+
+                // 🚀 अंदर से खुद का मैसेज या गलत फोटो डिलीट करने का बटन
+                if(msg.sender === "admin") {
+                    var delMsgBtn = document.createElement('button');
+                    delMsgBtn.className = "inner-delete-btn";
+                    delMsgBtn.innerText = "🗑️ डिलीट";
+                    delMsgBtn.onclick = function() {
+                        if(confirm("क्या आप इस मैसेज को डिलीट करना चाहते हैं?")) {
+                            database.ref('chats/' + roomKey + '/' + msgKey).remove();
+                        }
+                    };
+                    metaArea.appendChild(delMsgBtn);
+                }
                 
+                newMsg.appendChild(metaArea);
                 chatWindow.appendChild(newMsg);
                 chatWindow.scrollTop = chatWindow.scrollHeight; 
             });
 
-            // यदि ग्राहक कोई संदेश डिलीट करता है तो एडमिन स्क्रीन से भी लाइव गायब होगा
             currentLiveRef.on('child_removed', (snapshot) => {
                 var deletedDiv = document.getElementById("admin_msg_" + snapshot.key);
                 if(deletedDiv) {
@@ -401,37 +590,41 @@
             });
         }
 
-        function selectCustomer(id, name) {
-            var items = document.getElementsByClassName('customer-item');
-            for(var i=0; i<items.length; i++) { items[i].classList.remove('selected'); }
+        function downloadCustomerImage(base64Data) {
+            var link = document.createElement('a');
+            link.href = base64Data;
+            link.download = 'Cust_Image_' + Date.now() + '.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
-            var currentItem = document.getElementById(id);
-            if(currentItem) currentItem.classList.add('selected');
+        // 🚀 खुद से नया चैट रूम बनाने का फंक्शन
+        function initiateNewChat() {
+            var newNumber = prompt("कृपया ग्राहक का 10 अंकों का मोबाइल नंबर लिखें:");
+            if(!newNumber) return;
             
+            var cleanNum = newNumber.replace(/[^0-9]/g, "");
+            if(cleanNum.length < 10) {
+                alert("गलत नंबर! कृपया पूरा 10 अंकों का नंबर दर्ज करें।");
+                return;
+            }
+
+            var newName = prompt("ग्राहक का नाम लिखें (वैकल्पिक):") || "नया ग्राहक";
+
+            database.ref('chats/' + cleanNum).child('cust_profile').set({
+                name: newName,
+                phone: cleanNum
+            }).then(() => {
+                localStorage.setItem('lastSeen_' + cleanNum, Date.now());
+                selectCustomer("room_" + cleanNum, newName);
+                openCustomerChat(cleanNum);
+            });
+        }
+
+        function selectCustomer(id, name) {
             selectedCustomerId = id;
             selectedCustomerName = name;
-
-            document.getElementById('topBlockBtn').style.display = 'block';
-            document.getElementById('mainHeaderTitle').innerText = "चयनित: " + name;
-        }
-
-        function blockSelectedCustomer() {
-            if(selectedCustomerId) {
-                var actualRoomKey = selectedCustomerId.replace("room_", "");
-                var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + selectedCustomerName + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
-                if(confirmBlock) {
-                    database.ref('chats/' + actualRoomKey).remove().then(() => {
-                        alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
-                        closeCustomerChat();
-                    });
-                }
-            }
-        }
-
-        function resetAdminHeader() {
-            selectedCustomerId = null;
-            document.getElementById('topBlockBtn').style.display = 'none';
-            document.getElementById('mainHeaderTitle').innerText = "MG ASTROLOGY - ADMIN";
         }
 
         function openCustomerChat(roomKey) {
@@ -446,7 +639,7 @@
                 currentLiveRef = null;
             }
             document.getElementById('fullChatWindow').style.display = 'none';
-            resetAdminHeader();
+            selectedCustomerId = null;
         }
 
         function sendPaymentWarning() {
@@ -535,6 +728,5 @@
             }
         }, {once: true});
     </script>
-
 </body>
 </html>
