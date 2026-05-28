@@ -32,16 +32,30 @@
         .admin-header {
             background-color: #008069; 
             color: white;
-            padding: 15px 20px;
+            padding: 12px 20px;
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             border-bottom: 1px solid #005e4e;
+        }
+
+        /* 🟢 मुकुंद जी, एडमिन पैनल के ऊपर कोने के लिए आपका ब्रांड लोगो */
+        .admin-logo-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #d4af37;
+            object-fit: cover;
+            margin-right: 10px;
+        }
+
+        .header-left-area {
+            display: flex;
+            align-items: center;
         }
 
         .header-title { font-size: 20px; font-weight: bold; letter-spacing: 1px; }
         
-        /* ➕ नया चैट शुरू करने का प्रीमियम बटन स्टाइल */
         .new-chat-init-btn {
             background-color: #d4af37;
             color: #005e4e;
@@ -102,13 +116,33 @@
             flex: 1;
         }
 
+        /* 🟢 लाइव चमकीले बटन की स्टाइल */
+        .live-green-badge {
+            background-color: #00e676;
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            border: 1px solid #00c853;
+            animation: livePulse 2s infinite;
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        @keyframes livePulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
         .list-right-area {
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* 🔴 बाहर लिस्ट से ही पूरा फोल्डर उड़ाने वाला डिलीट बटन स्टाइल */
         .list-delete-btn {
             background-color: #fff0f0;
             color: #d32f2f;
@@ -121,7 +155,6 @@
         }
         .list-delete-btn:hover { background-color: #d32f2f; color: white; }
 
-        /* 🟢 अनरीड काउंटर स्टाइल */
         .unread-badge {
             background-color: #25d366;
             color: white;
@@ -195,7 +228,6 @@
             gap: 10px;
         }
         
-        /* अंदर से मैसेज/फोटो डिलीट करने का बटन */
         .inner-delete-btn {
             background: none;
             border: none;
@@ -206,7 +238,6 @@
             font-weight: bold;
         }
 
-        /* डाउनलोड बटन स्टाइल */
         .download-btn-style {
             background-color: #008069;
             color: white;
@@ -257,7 +288,7 @@
             background-color: #f0f2f5;
             padding: 10px 15px;
             display: flex;
-            align-items: center;
+            align-items: flex-end; /* बड़ा मैसेज होने पर बटन नीचे टिका रहे */
             gap: 10px;
             border-top: 1px solid #e1e9eb;
         }
@@ -269,12 +300,26 @@
             color: #54656f;
             cursor: pointer;
             outline: none;
+            margin-bottom: 5px;
             display: flex;
             align-items: center;
         }
         
-        .chat-input { flex: 1; padding: 12px 15px; border: 1px solid white; border-radius: 20px; font-size: 16px; outline: none; }
-        .send-btn { background-color: #00a884; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; outline: none; }
+        /* 📝 मुकुंद जी, यहाँ इनपुट को textarea स्टाइल दी है ताकि कीबोर्ड में तीर का निशान आए */
+        .chat-input { 
+            flex: 1; 
+            padding: 10px 15px; 
+            border: 1px solid white; 
+            border-radius: 20px; 
+            font-size: 16px; 
+            outline: none;
+            resize: none;
+            height: 40px;
+            max-height: 100px;
+            line-height: 1.4;
+            background: white;
+        }
+        .send-btn { background-color: #00a884; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; justify-content: center; align-items: center; outline: none; margin-bottom: 2px; flex-shrink: 0; }
     </style>
 </head>
 <body>
@@ -282,8 +327,11 @@
     <div class="admin-container">
         
         <div class="admin-header">
-            <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY</div>
-            <!-- ➕ नया चैट शुरू करने का बटन -->
+            <div class="header-left-area">
+                <!-- 🟢 यहाँ आपका ब्रांड लोगो सेट कर दिया है कोने में -->
+                <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="admin-logo-img" alt="MG Logo">
+                <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY</div>
+            </div>
             <button class="new-chat-init-btn" onclick="initiateNewChat()">➕ नया चैट</button>
         </div>
 
@@ -313,7 +361,8 @@
                 <button class="admin-upload-btn" onclick="openAdminGallery()">📎</button>
                 <input type="file" id="adminGalleryInput" accept="image/*" style="display:none;" onchange="adminImageSelected()">
                 
-                <input type="text" class="chat-input" id="adminMsgInput" placeholder="अपना उत्तर टाइप करें...">
+                <!-- 📝 यह रहा बदला हुआ व्हाट्सएप स्टाइल एंटर-की वाला textarea बॉक्स -->
+                <textarea class="chat-input" id="adminMsgInput" placeholder="अपना उत्तर टाइप करें..." rows="1"></textarea>
                 <button class="send-btn" onclick="adminSendMessage()">➤</button>
             </div>
         </div>
@@ -341,15 +390,12 @@
         var initialLoadDone = false; 
         var currentLiveRef = null; 
 
-        // 🔔 प्रीमियम व्हाट्सएप जैसी टोन लोड करना
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
 
-        // ब्राउज़र से लाइव पॉप-अप की अनुमति मांगना
         if (Notification.permission !== "granted") {
             Notification.requestPermission();
         }
 
-        // 🚀 नया एडवांस लिसनर लॉजिक (ऑटो-सॉर्टिंग, न्यू टैग और लाइव अलर्ट के साथ)
         database.ref('chats').on('value', (snapshot) => {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
@@ -374,6 +420,12 @@
                     var unreadCount = 0;
                     var lastTimestamp = 0;
                     var isNewClient = true; 
+                    var isOnline = false; // 🟢 डिफ़ॉल्ट ऑफलाइन स्थिति
+
+                    // प्रोफाइल से लाइव ऑनलाइन सिग्नल की जांच करना
+                    if(roomData.cust_profile && roomData.cust_profile.online === true) {
+                        isOnline = true;
+                    }
 
                     keys.forEach((key) => {
                         if(key !== 'cust_profile' && roomData[key].sender) {
@@ -408,28 +460,27 @@
                         unreadCount: unreadCount,
                         lastTimestamp: lastTimestamp,
                         isNewClient: isNewClient,
-                        totalKeys: keys.length
+                        totalKeys: keys.length,
+                        isOnline: isOnline
                     });
                 });
 
-                // 🔥 ऑटो-सॉर्टिंग: नया मैसेज आते ही क्लाइंट सबसे ऊपर आ जाएगा
                 roomArray.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 
                 roomArray.forEach((room) => {
-                    var displayTitle = room.savedName + " (" + room.roomKey + ")";
+                    // 📝 मुकुंद जी, यहाँ साफ़ सुथरा व्हाट्सएप स्टाइल लेआउट (सिर्फ एक जगह मोबाइल नंबर) सेट किया है
+                    var displayTitle = room.roomKey; 
                     
-                    // 🔔 व्हाट्सएप जैसा लाइव साउंड और स्क्रीन पॉप-अप नोटिफिकेशन ट्रिगर
                     if (initialLoadDone) {
                         var oldCount = lastMessagesCounts[room.roomKey] || 0;
                         if (room.totalKeys > oldCount && room.lastMsg && room.lastMsg.sender === "customer") {
                             notificationSound.play().catch(e => console.log("Sound error"));
                             
-                            // अगर ब्राउज़र की अनुमति है तो मोबाइल स्क्रीन पर पॉप-अप बॉक्स भेजना
                             if (Notification.permission === "granted") {
                                 var textBody = room.lastMsg.fileType === 'image' ? "📸 फोटो भेजी है" : room.lastMsg.text;
                                 new Notification("🔮 MG ASTROLOGY", { 
-                                    body: "नया संदेश (" + room.savedName + "): " + textBody.substring(0, 40),
-                                    icon: "https://i.imgur.com/your-logo-placeholder.png" // आप यहाँ अपने लोगो का लिंक डाल सकते हैं
+                                    body: "नया संदेश (" + room.roomKey + "): " + textBody.substring(0, 40),
+                                    icon: "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg"
                                 });
                             }
                         }
@@ -455,14 +506,17 @@
                     }
                     
                     var newTagHtml = room.isNewClient ? `<span class="new-client-tag">NEW</span>` : '';
+                    
+                    // 🟢 ग्राहक ऑनलाइन होने पर Live टैग जोड़ने का लॉजिक
+                    var liveTagHtml = room.isOnline ? `<span class="live-green-badge">Live 🟢</span>` : '';
 
                     var leftBox = document.createElement('div');
                     leftBox.className = "customer-info-box";
-                    leftBox.innerHTML = `<strong>🔮 ${displayTitle} ${newTagHtml}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
+                    leftBox.innerHTML = `<strong>📱 ${displayTitle} ${liveTagHtml} ${newTagHtml}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
                     
                     leftBox.onclick = function() {
                         localStorage.setItem('lastSeen_' + room.roomKey, Date.now());
-                        selectCustomer("room_" + room.roomKey, room.savedName);
+                        selectCustomer("room_" + room.roomKey, room.roomKey);
                         openCustomerChat(room.roomKey);
                     };
                     item.appendChild(leftBox);
@@ -477,13 +531,12 @@
                         rightArea.appendChild(badge);
                     }
 
-                    // 🚀 बाहर लिस्ट में ही डायरेक्ट पूरा फोल्डर उड़ाने का डिलीट बटन
                     var delFolderBtn = document.createElement('button');
                     delFolderBtn.className = "list-delete-btn";
                     delFolderBtn.innerText = "🗑️ डिलीट";
                     delFolderBtn.onclick = function(e) {
                         e.stopPropagation(); 
-                        var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + room.savedName + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
+                        var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + room.roomKey + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
                         if(confirmBlock) {
                             database.ref('chats/' + room.roomKey).remove().then(() => {
                                 alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
@@ -496,9 +549,7 @@
                     customerListWindow.appendChild(item);
                 });
 
-                if(!hasRooms) {
-                    showEmptyScreen(emptyNotice);
-                }
+                if(!hasRooms) { showEmptyScreen(emptyNotice); }
                 initialLoadDone = true;
             } else {
                 showEmptyScreen(emptyNotice);
@@ -515,7 +566,6 @@
             }
         }
 
-        // 🚀 अंदर से मैसेज डिलीट और कस्टमर फोटो डाउनलोड लॉजिक
         function listenToLiveMessages(roomKey) {
             var chatWindow = document.getElementById('adminChatWindow');
             chatWindow.innerHTML = ''; 
@@ -564,7 +614,6 @@
                     metaArea.appendChild(timeSpan);
                 }
 
-                // 🚀 अंदर से खुद का मैसेज या गलत फोटो डिलीट करने का बटन
                 if(msg.sender === "admin") {
                     var delMsgBtn = document.createElement('button');
                     delMsgBtn.className = "inner-delete-btn";
@@ -584,9 +633,7 @@
 
             currentLiveRef.on('child_removed', (snapshot) => {
                 var deletedDiv = document.getElementById("admin_msg_" + snapshot.key);
-                if(deletedDiv) {
-                    deletedDiv.remove();
-                }
+                if(deletedDiv) deletedDiv.remove();
             });
         }
 
@@ -599,7 +646,6 @@
             document.body.removeChild(link);
         }
 
-        // 🚀 खुद से नया चैट रूम बनाने का फंक्शन
         function initiateNewChat() {
             var newNumber = prompt("कृपया ग्राहक का 10 अंकों का मोबाइल नंबर लिखें:");
             if(!newNumber) return;
@@ -610,14 +656,12 @@
                 return;
             }
 
-            var newName = prompt("ग्राहक का नाम लिखें (वैकल्पिक):") || "नया ग्राहक";
-
             database.ref('chats/' + cleanNum).child('cust_profile').set({
-                name: newName,
+                name: cleanNum,
                 phone: cleanNum
             }).then(() => {
                 localStorage.setItem('lastSeen_' + cleanNum, Date.now());
-                selectCustomer("room_" + cleanNum, newName);
+                selectCustomer("room_" + cleanNum, cleanNum);
                 openCustomerChat(cleanNum);
             });
         }
@@ -628,7 +672,7 @@
         }
 
         function openCustomerChat(roomKey) {
-            document.getElementById('chattingWithTitle').innerText = "कस्टमर: " + selectedCustomerName;
+            document.getElementById('chattingWithTitle').innerText = "नंबर: " + selectedCustomerName;
             document.getElementById('fullChatWindow').style.display = 'flex';
             listenToLiveMessages(roomKey); 
         }
@@ -703,6 +747,7 @@
             database.ref('chats/' + actualRoomKey).push(messageData)
             .then(() => {
                 input.value = "";
+                input.style.height = '40px'; /* सेंड करने के बाद डिब्बा वापस नॉर्मल हो जाए */
             });
         }
 
@@ -717,6 +762,16 @@
                     items[i].style.display = "none";
                 }
             }
+        }
+
+        // 📝 टेक्स्ट की लंबाई के हिसाब से इनपुट बॉक्स का आकार एडजस्ट करने का लॉजिक
+        const adminTx = document.getElementById('adminMsgInput');
+        adminTx.addEventListener("input", OnAdminInput, false);
+
+        function OnAdminInput() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === "") this.style.height = '40px';
         }
 
         document.body.addEventListener('click', function() {
