@@ -78,6 +78,18 @@
             z-index: 10;
         }
 
+        /* 🌟 मुकुंद जी, यहाँ लोगो को एकदम गोल और सेंटर करने की स्टाइल जोड़ी है */
+        .master-app-logo {
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            object-fit: cover;
+            display: block;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            background: transparent;
+        }
+
         .login-box { 
             border: 1.5px solid #e1e9eb; 
             border-radius: 10px; 
@@ -112,6 +124,26 @@
         }
         .login-btn:hover { background-color: #008069; }
 
+        /* 📥 मुकुंद जी, यह आपके "डाउनलोड ऐप" बटन की बेहतरीन स्टाइल है */
+        .download-app-btn {
+            width: 100%;
+            padding: 12px;
+            background-color: #005e4e;
+            color: white;
+            border: 1px solid #d4af37;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            display: none; /* यह बटन तभी दिखेगा जब ऐप डाउनलोड होने के लिए तैयार होगी */
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .download-app-btn:hover { background-color: #004d40; }
+
         .terms-btn {
             background: none;
             border: none;
@@ -122,6 +154,7 @@
             text-decoration: underline;
             margin-bottom: 25px;
             display: inline-block;
+            margin-top: 10px;
         }
 
         .services-section { 
@@ -151,17 +184,24 @@
     </div>
 
     <div class="dashboard-container">
+        
+        <!-- 🔮 मुकुंद जी, आपका नया गोल और सुंदर लोगो यहाँ सेंटर में फिट कर दिया है -->
+        <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="master-app-logo" alt="MG Astrology Logo">
+
         <div class="login-box">
             <!-- 🔮 यहाँ सिर्फ मोबाइल नंबर का इनपुट रखा गया है, नाम वाला हटा दिया है -->
             <input type="tel" id="custPhone" class="login-input" placeholder="Mo-No. (अपना mobile नंबर लिखें)" required>
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
+            
+            <!-- 📥 मुकुंद जी, यह रहा लॉगिन बटन के ठीक नीचे नया डाउनलोड ऐप बटन -->
+            <button id="btnDownloadApp" class="download-app-btn" onclick="triggerAppInstall()">डाउनलोड ऐप 📥</button>
         </div>
 
         <button class="terms-btn" onclick="openTerms()">⚠️ नियम एवं शर्तें (Terms & Conditions)</button>
 
         <div class="services-section">
             <div class="welcome-text">नमस्ते! MG Astrology में आपका स्वागत है। 🙏</div>
-            <div class="sub-welcome-text">​🌟 हमारी विशेष पेड (Paid) ज्योतिष सेवाएं 🌟</div>
+            <div class="sub-welcome-text">🌟 हमारी विशेष पेड (Paid) ज्योतिष सेवाएं 🌟</div>
             <ul class="services-list">
                 <li>📜 विस्तृत कुंडली विश्लेषण</li>
                 <li>💍 रत्न एवं यंत्र परामर्श</li>
@@ -228,6 +268,45 @@
             // सीधा चैट पेज पर भेजें
             window.location.href = "chat.html";
         }
+
+        // 📲 मुकुंद जी, यहाँ से ऑटोमैटिक ऐप डाउनलोड (PWA) का असली लॉजिक शुरू होता है
+        let deferredPrompt;
+        const downloadBtn = document.getElementById('btnDownloadApp');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            // ब्राउज़र के डिफ़ॉल्ट पॉप-अप को रोकें
+            e.preventDefault();
+            // इवेंट को सुरक्षित रखें ताकि बटन दबाने पर इस्तेमाल हो सके
+            deferredPrompt = e;
+            // लॉगिन बटन के नीचे वाले डाउनलोड बटन को ग्राहकों को दिखाएं
+            downloadBtn.style.display = 'flex';
+        });
+
+        function triggerAppInstall() {
+            if (!deferredPrompt) {
+                alert("यह ऐप आपके डिवाइस में पहले से इंस्टॉल है या आपका ब्राउज़र इसका समर्थन नहीं करता है।");
+                return;
+            }
+            // ग्राहक को डाउनलोड का पॉप-अप दिखाएं
+            deferredPrompt.prompt();
+            // ग्राहक के फैसले का इंतज़ार करें
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+                downloadBtn.style.display = 'none';
+            });
+        }
+
+        // ऐप इंस्टॉल हो जाने के बाद बटन को छुपा दें
+        window.addEventListener('appinstalled', () => {
+            console.log('App successfully installed!');
+            downloadBtn.style.display = 'none';
+            deferredPrompt = null;
+        });
     </script>
 </body>
 </html>
