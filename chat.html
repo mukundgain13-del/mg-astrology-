@@ -63,19 +63,15 @@
             z-index: 1002;
         }
 
-        .designer-logo {
+        /* 🟢 मुकुंद जी, ऊपर बाएं कोने पर आपका असली गोल लोगो */
+        .designer-logo-img {
             width: 42px;
             height: 42px;
             border-radius: 50%;
-            background: #ffffff;
             border: 2px solid #d4af37; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            color: #006755;
-            font-size: 18px;
+            object-fit: cover;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: transparent;
         }
 
         .header-info { flex: 1; margin-left: 12px; }
@@ -165,12 +161,13 @@
             background-color: #f0f2f5;
             padding: 10px 14px;
             display: flex;
-            align-items: center;
+            align-items: flex-end; /* व्हाट्सएप की तरह बड़ा टेक्स्ट होने पर बटन नीचे टिका रहे */
             gap: 10px;
             position: absolute;
             bottom: 0;
             width: 100%;
-            border-top: 1px solid #e1e9eb;
+            border-top: 1px solid #e1e1e9;
+            z-index: 10;
         }
 
         .upload-btn {
@@ -181,27 +178,33 @@
             cursor: pointer;
             outline: none;
             padding: 0 4px;
+            margin-bottom: 5px; /* बटन को अलाइन रखने के लिए */
             display: flex;
             align-items: center;
         }
 
+        /* 📝 मुकुंद जी, यहाँ टाइपिंग बॉक्स को textarea स्टाइल दी है ताकि कीबोर्ड में तीर का निशान आए */
         .chat-input {
             flex: 1;
-            padding: 11px 15px;
+            padding: 10px 15px;
             border: 1px solid white;
-            border-radius: 24px;
+            border-radius: 20px;
             font-size: 15px;
             outline: none;
             background: white;
             box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+            resize: none; /* डिब्बा खींचकर बड़ा न हो */
+            height: 40px;
+            max-height: 100px; /* ज़्यादा लिखने पर अपने आप स्क्रॉल हो */
+            line-height: 1.4;
         }
 
         .send-btn {
             background-color: #00a884;
             color: white;
             border: none;
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             font-size: 18px;
             cursor: pointer;
@@ -210,6 +213,8 @@
             align-items: center;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             outline: none;
+            margin-bottom: 2px;
+            flex-shrink: 0;
         }
     </style>
 </head>
@@ -219,7 +224,8 @@
         
         <div class="chat-header">
             <a href="index.html" class="back-btn">←</a>
-            <div class="designer-logo">MG</div>
+            <!-- 🟢 यहाँ "MG" टेक्स्ट हटाकर आपका असली गोल लोगो कोने में सेट कर दिया है -->
+            <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="designer-logo-img" alt="MG Logo">
             <div class="header-info">
                 <div class="header-name">MG ASTROLOGY</div>
                 <div class="header-status"><span class="status-dot"></span> ऑनलाइन सहायता</div>
@@ -232,7 +238,8 @@
             <button class="upload-btn" onclick="openGallery()">📎</button>
             <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="imageSelected()">
             
-            <input type="text" class="chat-input" id="msgInput" placeholder="मैसेज टाइप करें...">
+            <!-- 📝 मुकुंद जी, यह रहा बदला हुआ व्हाट्सएप स्टाइल textarea बॉक्स -->
+            <textarea class="chat-input" id="msgInput" placeholder="मैसेज टाइप करें..." rows="1"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
 
@@ -257,7 +264,24 @@
         const custPhone = localStorage.getItem('currentCustPhone') || "0000000000";
         const myRoomId = custPhone; 
 
-        // 🚀 नया लिसनर: चेक करें कि क्या ग्राहक का कोई पुराना वास्तविक मैसेज है
+        // 🟢 मुकुंद जी, यहाँ से ग्राहक का लाइव ऑनलाइन सिग्नल ट्रैक करने का लॉजिक शुरू होता है
+        const userStatusRef = database.ref('chats/' + myRoomId + '/cust_profile');
+        
+        // पेज खुलते ही स्थिति ऑनलाइन करें
+        userStatusRef.update({ online: true });
+
+        // यदि ग्राहक अचानक ब्राउज़र टैब बंद कर दे, तो ऑटोमैटिक ऑफलाइन हो जाए
+        database.ref('.info/connected').on('value', (snapshot) => {
+            if (snapshot.val() == false) return;
+            userStatusRef.child('online').onDisconnect().set(false);
+        });
+
+        // बैक बटन दबाकर बाहर जाने पर स्थिति ऑफलाइन करें
+        document.querySelector('.back-btn').addEventListener('click', () => {
+            userStatusRef.update({ online: false });
+        });
+
+        // 🚀 चेक करें कि क्या ग्राहक का कोई पुराना वास्तविक मैसेज है
         database.ref('chats/' + myRoomId).once('value', (snapshot) => {
             var hasRealMessages = false;
             
@@ -270,7 +294,6 @@
                 });
             }
 
-            // यदि कोई पुराना मैसेज नहीं है, तो तुरंत नया कस्टमाइज्ड फॉर्मेट दिखाएँ
             if(!hasRealMessages) {
                 const chatBox = document.getElementById('chatBox');
                 const welcomeDiv = document.createElement('div');
@@ -346,12 +369,9 @@
             chatBox.scrollTop = chatBox.scrollHeight;
         });
 
-        // डिलीट होने पर स्क्रीन से लाइव गायब करने का लिसनर
         database.ref('chats/' + myRoomId).on('child_removed', (snapshot) => {
             const deletedDiv = document.getElementById("msg_" + snapshot.key);
-            if(deletedDiv) {
-                deletedDiv.remove();
-            }
+            if(deletedDiv) deletedDiv.remove();
         });
 
         function sendMessage() {
@@ -366,14 +386,16 @@
                 fileType: "text"
             };
 
-            // पहला मैसेज भेजते ही प्रोफाइल और नाम एडमिन पैनल के लिए दर्ज होगा
-            database.ref('chats/' + myRoomId).child('cust_profile').set({
+            // प्रोफाइल डेटा के साथ ऑनलाइन स्थिति भी बनी रहे
+            database.ref('chats/' + myRoomId).child('cust_profile').update({
                 name: custName,
-                phone: custPhone
+                phone: custPhone,
+                online: true
             });
 
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
                 input.value = "";
+                input.style.height = '40px'; /* सेंड करने के बाद डिब्बा वापस नॉर्मल साइज़ का हो जाए */
             });
         }
 
@@ -412,9 +434,15 @@
             }
         }
 
-        document.getElementById('msgInput').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') { sendMessage(); }
-        });
+        // 📝 टेक्स्ट की लंबाई के हिसाब से इनपुट बॉक्स का आकार अपने आप थोड़ा एडजस्ट होगा
+        const tx = document.getElementById('msgInput');
+        tx.addEventListener("input", OnInput, false);
+
+        function OnInput() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === "") this.style.height = '40px';
+        }
     </script>
 </body>
 </html>
