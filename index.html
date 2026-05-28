@@ -38,20 +38,15 @@
             z-index: 999;
         }
 
-        .designer-logo {
+        /* 🟢 मुकुंद जी, ऊपर बाएं कोने पर आपका असली गोल लोगो */
+        .designer-logo-img {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background: #ffffff;
             border: 2px solid #d4af37; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            color: #006755;
-            font-size: 16px;
-            letter-spacing: 0.5px;
+            object-fit: cover;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            background: transparent;
         }
 
         .designer-title-center {
@@ -78,24 +73,13 @@
             z-index: 10;
         }
 
-        /* 🌟 मुकुंद जी, यहाँ लोगो को एकदम गोल और सेंटर करने की स्टाइल जोड़ी है */
-        .master-app-logo {
-            width: 130px;
-            height: 130px;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
-            margin: 0 auto 20px auto;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            background: transparent;
-        }
-
         .login-box { 
             border: 1.5px solid #e1e9eb; 
             border-radius: 10px; 
             padding: 15px; 
             margin-bottom: 15px; 
             background-color: #f8f9fa;
+            margin-top: 15px;
         }
 
         .login-input { 
@@ -124,7 +108,7 @@
         }
         .login-btn:hover { background-color: #008069; }
 
-        /* 📥 मुकुंद जी, यह आपके "डाउनलोड ऐप" बटन की बेहतरीन स्टाइल है */
+        /* 📥 मुकुंद जी, यह रहा लॉगिन बटन के ठीक नीचे "डाउनलोड ऐप" बटन की स्टाइल */
         .download-app-btn {
             width: 100%;
             padding: 12px;
@@ -135,8 +119,8 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 10px;
-            display: none; /* यह बटन तभी दिखेगा जब ऐप डाउनलोड होने के लिए तैयार होगी */
+            margin-top: 12px;
+            display: flex; 
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -179,21 +163,23 @@
 <body>
 
     <div class="top-designer-bar">
-        <div class="designer-logo">MG</div>
+        <!-- 🟢 मुकुंद जी, यहाँ बाएं कोने पर आपका असली गोल लोगो सेट है -->
+        <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="designer-logo-img" alt="MG Logo">
         <div class="designer-title-center">MG ASTROLOGY</div>
     </div>
 
     <div class="dashboard-container">
         
-        <!-- 🔮 मुकुंद जी, आपका नया गोल और सुंदर लोगो यहाँ सेंटर में फिट कर दिया है -->
-        <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="master-app-logo" alt="MG Astrology Logo">
+        <!-- बीच में से बड़ा लोगो पूरी तरह गायब कर दिया गया है ताकि पेज एकदम साफ़ लगे -->
 
         <div class="login-box">
-            <!-- 🔮 यहाँ सिर्फ मोबाइल नंबर का इनपुट रखा गया है, नाम वाला हटा दिया है -->
+            <!-- 1. सबसे पहले मोबाइल नंबर का इनपुट -->
             <input type="tel" id="custPhone" class="login-input" placeholder="Mo-No. (अपना mobile नंबर लिखें)" required>
+            
+            <!-- 2. उसके ठीक नीचे आपका लॉगिन बटन -->
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
             
-            <!-- 📥 मुकुंद जी, यह रहा लॉगिन बटन के ठीक नीचे नया डाउनलोड ऐप बटन -->
+            <!-- 3. और लॉगिन बटन के ठीक नीचे हमेशा दिखने वाला डाउनलोड बटन -->
             <button id="btnDownloadApp" class="download-app-btn" onclick="triggerAppInstall()">डाउनलोड ऐप 📥</button>
         </div>
 
@@ -245,68 +231,33 @@
         function openTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
 
-        // 🚀 व्हाट्सएप स्टाइल सुधार: सिर्फ मोबाइल नंबर से लॉगिन का लॉजिक
         function loginAndGo() {
             var phone = document.getElementById('custPhone').value.trim();
-            
-            if(phone === "") {
-                alert("कृपया अपना मोबाइल नंबर दर्ज करें।");
-                return;
-            }
-            
+            if(phone === "") { alert("कृपया अपना मोबाइल नंबर दर्ज करें।"); return; }
             var cleanPhone = phone.replace(/[^0-9]/g, "");
-            
-            if(cleanPhone.length < 10) {
-                alert("कृपया सही और पूरा 10 अंकों का मोबाइल नंबर लिखें।");
-                return;
-            }
-            
-            // नाम की जगह भी नंबर ही स्टोर कर रहे हैं ताकि कोड क्रैश न हो और व्हाट्सएप की तरह काम करे
+            if(cleanPhone.length < 10) { alert("कृपया सही और पूरा 10 अंकों का मोबाइल नंबर लिखें।"); return; }
             localStorage.setItem('currentCustName', cleanPhone);
             localStorage.setItem('currentCustPhone', cleanPhone);
-            
-            // सीधा चैट पेज पर भेजें
             window.location.href = "chat.html";
         }
 
-        // 📲 मुकुंद जी, यहाँ से ऑटोमैटिक ऐप डाउनलोड (PWA) का असली लॉजिक शुरू होता है
         let deferredPrompt;
-        const downloadBtn = document.getElementById('btnDownloadApp');
-
         window.addEventListener('beforeinstallprompt', (e) => {
-            // ब्राउज़र के डिफ़ॉल्ट पॉप-अप को रोकें
             e.preventDefault();
-            // इवेंट को सुरक्षित रखें ताकि बटन दबाने पर इस्तेमाल हो सके
             deferredPrompt = e;
-            // लॉगिन बटन के नीचे वाले डाउनलोड बटन को ग्राहकों को दिखाएं
-            downloadBtn.style.display = 'flex';
         });
 
         function triggerAppInstall() {
-            if (!deferredPrompt) {
-                alert("यह ऐप आपके डिवाइस में पहले से इंस्टॉल है या आपका ब्राउज़र इसका समर्थन नहीं करता है।");
-                return;
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') { console.log('User accepted'); }
+                    deferredPrompt = null;
+                });
+            } else {
+                alert("ऐप डाउनलोड करने के लिए ऊपर कोने में दिख रहे तीन बिंदुओं (Three Dots) पर क्लिक करें और 'Add to Home Screen' या 'Install App' चुनें।");
             }
-            // ग्राहक को डाउनलोड का पॉप-अप दिखाएं
-            deferredPrompt.prompt();
-            // ग्राहक के फैसले का इंतज़ार करें
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                } else {
-                    console.log('User dismissed the install prompt');
-                }
-                deferredPrompt = null;
-                downloadBtn.style.display = 'none';
-            });
         }
-
-        // ऐप इंस्टॉल हो जाने के बाद बटन को छुपा दें
-        window.addEventListener('appinstalled', () => {
-            console.log('App successfully installed!');
-            downloadBtn.style.display = 'none';
-            deferredPrompt = null;
-        });
     </script>
 </body>
 </html>
