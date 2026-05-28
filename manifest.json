@@ -1,0 +1,22 @@
+{
+  "short_name": "MG Astrology",
+  "name": "MG ASTROLOGY",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg",
+      "type": "image/jpeg",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg",
+      "type": "image/jpeg",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/index.html",
+  "background_color": "#008069",
+  "display": "standalone",
+  "theme_color": "#008069",
+  "orientation": "portrait"
+}
+
