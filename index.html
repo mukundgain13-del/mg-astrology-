@@ -152,8 +152,8 @@
 
     <div class="dashboard-container">
         <div class="login-box">
+            <!-- 🔮 यहाँ सिर्फ मोबाइल नंबर का इनपुट रखा गया है, नाम वाला हटा दिया है -->
             <input type="tel" id="custPhone" class="login-input" placeholder="Mo-No. (अपना mobile नंबर लिखें)" required>
-            <input type="text" id="custName" class="login-input" placeholder="Name (अपना पूरा नाम लिखें)" required>
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
         </div>
 
@@ -192,7 +192,7 @@
             <div class="modal-title">⚠️ महत्वपूर्ण नियम एवं शर्तें (कानूनी सुरक्षा):</div>
             <ol class="modal-list">
                 <li>यह सेवा केवल गंभीर परामर्श चाहने वाले ग्राहकों के लिए है। फ्री या टाइमपास करने वाले कृपया दूर रहें।</li>
-                <li>लॉगिन करते समय सही नाम और सक्रिय मोबाइल नंबर देना अनिवार्य है। गलत जानकारी पर तुरंत ब्लॉक कर दिया जाएगा।</li>
+                <li>लॉगिन करते समय सही सक्रिय मोबाइल नंबर देना अनिवार्य है। गलत जानकारी पर तुरंत ब्लॉक कर दिया जाएगा।</li>
                 <li>चैट बॉक्स में किसी भी प्रकार की अभद्र भाषा या फालतू बहस करने पर बिना किसी पूर्व सूचना के तुरंत स्थायी रूप से ब्लॉक (Block) कर दिया जाएगा।</li>
                 <li style="font-weight: bold; color: #d32f2f;">एक बार शुल्क जमा होने के बाद किसी भी परिस्थिति में FEES REFUND (वापस) नहीं की जाएगी। परामर्श केवल आपके द्वारा दिए गए जन्म विवरण के आधार पर ही मान्य होगा।</li>
                 <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
@@ -205,20 +205,24 @@
         function openTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
 
-        // 🚀 फाइनल सुधार: चाबियों के नाम चैट पेज से मिला दिए गए हैं
+        // 🚀 व्हाट्सएप स्टाइल सुधार: सिर्फ मोबाइल नंबर से लॉगिन का लॉजिक
         function loginAndGo() {
             var phone = document.getElementById('custPhone').value.trim();
-            var name = document.getElementById('custName').value.trim();
             
-            if(phone === "" || name === "") {
-                alert("कृपया अपना नाम और मोबाइल नंबर दर्ज करें।");
+            if(phone === "") {
+                alert("कृपया अपना मोबाइल नंबर दर्ज करें।");
                 return;
             }
             
             var cleanPhone = phone.replace(/[^0-9]/g, "");
             
-            // यहाँ चाबियाँ 'currentCustName' और 'currentCustPhone' रखी गई हैं
-            localStorage.setItem('currentCustName', name);
+            if(cleanPhone.length < 10) {
+                alert("कृपया सही और पूरा 10 अंकों का मोबाइल नंबर लिखें।");
+                return;
+            }
+            
+            // नाम की जगह भी नंबर ही स्टोर कर रहे हैं ताकि कोड क्रैश न हो और व्हाट्सएप की तरह काम करे
+            localStorage.setItem('currentCustName', cleanPhone);
             localStorage.setItem('currentCustPhone', cleanPhone);
             
             // सीधा चैट पेज पर भेजें
