@@ -183,7 +183,6 @@
             transition: all 0.2s ease;
         }
 
-        /* 🎤 माइक ऑन होने पर लाल ब्लिंक एनिमेशन */
         .mic-recording {
             color: #d32f2f !important;
             animation: micPulse 1.2s infinite;
@@ -248,7 +247,6 @@
             <button class="upload-btn" onclick="openGallery()">📎</button>
             <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="imageSelected()">
             
-            <!-- 🎤 नया सुधरा हुआ माइक बटन -->
             <button class="mic-btn" id="micBtn" onclick="toggleVoiceTyping()">🎤</button>
             
             <textarea class="chat-input" id="msgInput" placeholder="मैसेज टाइप करें..." rows="1"></textarea>
@@ -278,7 +276,10 @@
 
         const userStatusRef = database.ref('chats/' + myRoomId + '/cust_profile');
         
-        userStatusRef.update({ online: true });
+        userStatusRef.update({ 
+            online: true,
+            lastSeen: Date.now() // अपडेटेड टाइमस्टैम्प ताकि ऑटो-क्लीनअप ट्रिगर न हो
+        });
 
         database.ref('.info/connected').on('value', (snapshot) => {
             if (snapshot.val() == false) return;
@@ -392,10 +393,12 @@
                 fileType: "text"
             };
 
+            // यहाँ लास्ट अपडेट टाइम डाल दिया है ताकि डेटाबेस एक्टिव रहे
             database.ref('chats/' + myRoomId).child('cust_profile').update({
                 name: custName,
                 phone: custPhone,
-                online: true
+                online: true,
+                lastSeen: Date.now() 
             });
 
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
@@ -448,7 +451,7 @@
             if(this.value === "") this.style.height = '40px';
         }
 
-        // 🎤 ⏬ सुधरा हुआ नो-रिपीट वॉइस लॉजिक ⏬
+        // 🎤 वॉइस टू टेक्स्ट लॉजिक (बिना रिपीट और एकदम स्टेबल)
         let recognition;
         let isRecording = false;
 
