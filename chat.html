@@ -183,7 +183,7 @@
             transition: all 0.2s ease;
         }
 
-        /* 🎤 माइक रिकॉर्डिंग चालू होने पर ब्लिंक इफेक्ट */
+        /* 🎤 माइक ऑन होने पर लाल ब्लिंक एनिमेशन */
         .mic-recording {
             color: #d32f2f !important;
             animation: micPulse 1.2s infinite;
@@ -248,7 +248,7 @@
             <button class="upload-btn" onclick="openGallery()">📎</button>
             <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="imageSelected()">
             
-            <!-- 🎤 मुकुंद जी, यहाँ जोड़ा गया नया वॉइस-टू-टेक्स्ट माइक बटन -->
+            <!-- 🎤 नया सुधरा हुआ माइक बटन -->
             <button class="mic-btn" id="micBtn" onclick="toggleVoiceTyping()">🎤</button>
             
             <textarea class="chat-input" id="msgInput" placeholder="मैसेज टाइप करें..." rows="1"></textarea>
@@ -448,34 +448,30 @@
             if(this.value === "") this.style.height = '40px';
         }
 
-        // 🎤 ⏬ यहाँ से वॉइस-टू-टेक्स्ट (माइक लॉजिक) शुरू होता है ⏬
+        // 🎤 ⏬ सुधरा हुआ नो-रिपीट वॉइस लॉजिक ⏬
         let recognition;
         let isRecording = false;
 
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            recognition.continuous = true; // लगातार सुनते रहने के लिए
-            recognition.interimResults = true; // बोलते समय लाइव टेक्स्ट दिखाने के लिए
-            recognition.lang = 'hi-IN'; // हिंदी भाषा डिफ़ॉल्ट सेट की है
+            
+            recognition.continuous = false; 
+            recognition.interimResults = false; 
+            recognition.lang = 'hi-IN'; 
 
             recognition.onresult = function(event) {
-                let interimTranscript = '';
-                let finalTranscript = '';
-
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-
+                const resultIndex = event.resultIndex;
+                const finalTranscript = event.results[resultIndex][0].transcript;
                 const inputField = document.getElementById('msgInput');
-                // पुराना लिखा हुआ टेक्स्ट डिलीट नहीं होगा, नया बोला हुआ आगे जुड़ता जाएगा
+                
                 if(finalTranscript !== '') {
-                    inputField.value += finalTranscript + ' ';
-                    OnInput.call(inputField); // बॉक्स साइज ऑटो-एडजस्ट करने के लिए
+                    if (inputField.value.trim() === "") {
+                        inputField.value = finalTranscript + ' ';
+                    } else {
+                        inputField.value += finalTranscript + ' ';
+                    }
+                    OnInput.call(inputField); 
                 }
             };
 
@@ -485,9 +481,7 @@
             };
 
             recognition.onend = function() {
-                if(isRecording) {
-                    recognition.start(); // यदि अचानक बंद हो तो खुद चालू हो जाए
-                }
+                stopRecording();
             };
         } else {
             document.getElementById('micBtn').style.display = 'none';
@@ -496,7 +490,6 @@
 
         function toggleVoiceTyping() {
             if (!recognition) return;
-            
             if (isRecording) {
                 stopRecording();
             } else {
@@ -506,14 +499,20 @@
 
         function startRecording() {
             isRecording = true;
-            recognition.start();
-            document.getElementById('micBtn').classList.add('mic-recording');
-            document.getElementById('msgInput').placeholder = "सुन रहा हूँ... बोलिए...";
+            try {
+                recognition.start();
+                document.getElementById('micBtn').classList.add('mic-recording');
+                document.getElementById('msgInput').placeholder = "सुन रहा हूँ... बोलिए...";
+            } catch(e) {
+                console.log(e);
+            }
         }
 
         function stopRecording() {
             isRecording = false;
-            recognition.stop();
+            try {
+                recognition.stop();
+            } catch(e) {}
             document.getElementById('micBtn').classList.remove('mic-recording');
             document.getElementById('msgInput').placeholder = "मैसेज टाइप करें...";
         }
