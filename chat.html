@@ -63,7 +63,6 @@
             z-index: 1002;
         }
 
-        /* 🟢 मुकुंद जी, ऊपर बाएं कोने पर आपका असली गोल लोगो */
         .designer-logo-img {
             width: 42px;
             height: 42px;
@@ -161,7 +160,7 @@
             background-color: #f0f2f5;
             padding: 10px 14px;
             display: flex;
-            align-items: flex-end; /* व्हाट्सएप की तरह बड़ा टेक्स्ट होने पर बटन नीचे टिका रहे */
+            align-items: flex-end; 
             gap: 10px;
             position: absolute;
             bottom: 0;
@@ -170,7 +169,7 @@
             z-index: 10;
         }
 
-        .upload-btn {
+        .upload-btn, .mic-btn {
             background: none;
             border: none;
             font-size: 24px;
@@ -178,12 +177,24 @@
             cursor: pointer;
             outline: none;
             padding: 0 4px;
-            margin-bottom: 5px; /* बटन को अलाइन रखने के लिए */
+            margin-bottom: 5px; 
             display: flex;
             align-items: center;
+            transition: all 0.2s ease;
         }
 
-        /* 📝 मुकुंद जी, यहाँ टाइपिंग बॉक्स को textarea स्टाइल दी है ताकि कीबोर्ड में तीर का निशान आए */
+        /* 🎤 माइक रिकॉर्डिंग चालू होने पर ब्लिंक इफेक्ट */
+        .mic-recording {
+            color: #d32f2f !important;
+            animation: micPulse 1.2s infinite;
+        }
+
+        @keyframes micPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         .chat-input {
             flex: 1;
             padding: 10px 15px;
@@ -193,9 +204,9 @@
             outline: none;
             background: white;
             box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-            resize: none; /* डिब्बा खींचकर बड़ा न हो */
+            resize: none; 
             height: 40px;
-            max-height: 100px; /* ज़्यादा लिखने पर अपने आप स्क्रॉल हो */
+            max-height: 100px; 
             line-height: 1.4;
         }
 
@@ -224,7 +235,6 @@
         
         <div class="chat-header">
             <a href="index.html" class="back-btn">←</a>
-            <!-- 🟢 यहाँ "MG" टेक्स्ट हटाकर आपका असली गोल लोगो कोने में सेट कर दिया है -->
             <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="designer-logo-img" alt="MG Logo">
             <div class="header-info">
                 <div class="header-name">MG ASTROLOGY</div>
@@ -238,7 +248,9 @@
             <button class="upload-btn" onclick="openGallery()">📎</button>
             <input type="file" id="galleryInput" accept="image/*" style="display:none;" onchange="imageSelected()">
             
-            <!-- 📝 मुकुंद जी, यह रहा बदला हुआ व्हाट्सएप स्टाइल textarea बॉक्स -->
+            <!-- 🎤 मुकुंद जी, यहाँ जोड़ा गया नया वॉइस-टू-टेक्स्ट माइक बटन -->
+            <button class="mic-btn" id="micBtn" onclick="toggleVoiceTyping()">🎤</button>
+            
             <textarea class="chat-input" id="msgInput" placeholder="मैसेज टाइप करें..." rows="1"></textarea>
             <button class="send-btn" onclick="sendMessage()">➤</button>
         </div>
@@ -264,24 +276,19 @@
         const custPhone = localStorage.getItem('currentCustPhone') || "0000000000";
         const myRoomId = custPhone; 
 
-        // 🟢 मुकुंद जी, यहाँ से ग्राहक का लाइव ऑनलाइन सिग्नल ट्रैक करने का लॉजिक शुरू होता है
         const userStatusRef = database.ref('chats/' + myRoomId + '/cust_profile');
         
-        // पेज खुलते ही स्थिति ऑनलाइन करें
         userStatusRef.update({ online: true });
 
-        // यदि ग्राहक अचानक ब्राउज़र टैब बंद कर दे, तो ऑटोमैटिक ऑफलाइन हो जाए
         database.ref('.info/connected').on('value', (snapshot) => {
             if (snapshot.val() == false) return;
             userStatusRef.child('online').onDisconnect().set(false);
         });
 
-        // बैक बटन दबाकर बाहर जाने पर स्थिति ऑफलाइन करें
         document.querySelector('.back-btn').addEventListener('click', () => {
             userStatusRef.update({ online: false });
         });
 
-        // 🚀 चेक करें कि क्या ग्राहक का कोई पुराना वास्तविक मैसेज है
         database.ref('chats/' + myRoomId).once('value', (snapshot) => {
             var hasRealMessages = false;
             
@@ -309,7 +316,6 @@
             }
         });
 
-        // .on('child_added') लाइव रियल-टाइम सिंक कनेक्शन
         database.ref('chats/' + myRoomId).on('child_added', (snapshot) => {
             const chatBox = document.getElementById('chatBox');
             const msgKey = snapshot.key;
@@ -386,7 +392,6 @@
                 fileType: "text"
             };
 
-            // प्रोफाइल डेटा के साथ ऑनलाइन स्थिति भी बनी रहे
             database.ref('chats/' + myRoomId).child('cust_profile').update({
                 name: custName,
                 phone: custPhone,
@@ -395,7 +400,7 @@
 
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
                 input.value = "";
-                input.style.height = '40px'; /* सेंड करने के बाद डिब्बा वापस नॉर्मल साइज़ का हो जाए */
+                input.style.height = '40px'; 
             });
         }
 
@@ -434,7 +439,6 @@
             }
         }
 
-        // 📝 टेक्स्ट की लंबाई के हिसाब से इनपुट बॉक्स का आकार अपने आप थोड़ा एडजस्ट होगा
         const tx = document.getElementById('msgInput');
         tx.addEventListener("input", OnInput, false);
 
@@ -442,6 +446,76 @@
             this.style.height = 'auto';
             this.style.height = (this.scrollHeight) + 'px';
             if(this.value === "") this.style.height = '40px';
+        }
+
+        // 🎤 ⏬ यहाँ से वॉइस-टू-टेक्स्ट (माइक लॉजिक) शुरू होता है ⏬
+        let recognition;
+        let isRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = true; // लगातार सुनते रहने के लिए
+            recognition.interimResults = true; // बोलते समय लाइव टेक्स्ट दिखाने के लिए
+            recognition.lang = 'hi-IN'; // हिंदी भाषा डिफ़ॉल्ट सेट की है
+
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+
+                const inputField = document.getElementById('msgInput');
+                // पुराना लिखा हुआ टेक्स्ट डिलीट नहीं होगा, नया बोला हुआ आगे जुड़ता जाएगा
+                if(finalTranscript !== '') {
+                    inputField.value += finalTranscript + ' ';
+                    OnInput.call(inputField); // बॉक्स साइज ऑटो-एडजस्ट करने के लिए
+                }
+            };
+
+            recognition.onerror = function(event) {
+                console.error("माइक एरर:", event.error);
+                stopRecording();
+            };
+
+            recognition.onend = function() {
+                if(isRecording) {
+                    recognition.start(); // यदि अचानक बंद हो तो खुद चालू हो जाए
+                }
+            };
+        } else {
+            document.getElementById('micBtn').style.display = 'none';
+            console.log("यह ब्राउज़र वॉइस टाइपिंग सपोर्ट नहीं करता है।");
+        }
+
+        function toggleVoiceTyping() {
+            if (!recognition) return;
+            
+            if (isRecording) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        }
+
+        function startRecording() {
+            isRecording = true;
+            recognition.start();
+            document.getElementById('micBtn').classList.add('mic-recording');
+            document.getElementById('msgInput').placeholder = "सुन रहा हूँ... बोलिए...";
+        }
+
+        function stopRecording() {
+            isRecording = false;
+            recognition.stop();
+            document.getElementById('micBtn').classList.remove('mic-recording');
+            document.getElementById('msgInput').placeholder = "मैसेज टाइप करें...";
         }
     </script>
 </body>
