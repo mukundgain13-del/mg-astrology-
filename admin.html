@@ -304,7 +304,6 @@
             transition: all 0.2s ease;
         }
 
-        /* 🎤 माइक ऑन होने पर ब्लिंक इफेक्ट */
         .admin-mic-recording {
             color: #d32f2f !important;
             animation: adminMicPulse 1.2s infinite;
@@ -370,7 +369,6 @@
                 <button class="admin-upload-btn" onclick="openAdminGallery()">📎</button>
                 <input type="file" id="adminGalleryInput" accept="image/*" style="display:none;" onchange="adminImageSelected()">
                 
-                <!-- 🎤 एडमिन पैनल के लिए नो-रिपीट माइक बटन -->
                 <button class="admin-mic-btn" id="adminMicBtn" onclick="toggleAdminVoiceTyping()">🎤</button>
                 
                 <textarea class="chat-input" id="adminMsgInput" placeholder="अपना उत्तर टाइप करें..." rows="1"></textarea>
@@ -420,7 +418,7 @@
                 var hasRooms = false;
                 var roomArray = [];
                 const currentTime = Date.now();
-                const seventyTwoHoursInMs = 72 * 60 * 60 * 1000; // 72 घंटे मिलीसेकंड में
+                const seventyTwoHoursInMs = 72 * 60 * 60 * 1000; 
 
                 Object.keys(rooms).forEach((roomKey) => {
                     if(roomKey === 'apiKey' || roomKey === 'authDomain' || roomKey === 'projectId' || roomKey === 'storageBucket' || roomKey === 'messagingSenderId' || roomKey === 'appId' || roomKey === 'measurementId' || typeof rooms[roomKey] !== 'object') return;
@@ -434,15 +432,17 @@
                     var isNewClient = true; 
                     var isOnline = false; 
 
-                    if(roomData.cust_profile && roomData.cust_profile.online === true) {
-                        isOnline = true;
+                    // 🛠️ सुरक्षा सुधार: अगर प्रोफाइल में लास्टसीन टाइमस्टैम्प है, तो उसे बेस बनाएं
+                    if(roomData.cust_profile) {
+                        if(roomData.cust_profile.online === true) isOnline = true;
+                        if(roomData.cust_profile.lastSeen) lastTimestamp = roomData.cust_profile.lastSeen;
                     }
 
                     keys.forEach((key) => {
                         if(key !== 'cust_profile' && roomData[key].sender) {
                             var msg = roomData[key];
                             lastMsg = msg;
-                            if(msg.timestamp > lastTimestamp) {
+                            if(msg.timestamp && msg.timestamp > lastTimestamp) {
                                 lastTimestamp = msg.timestamp;
                             }
                             if(msg.sender === 'admin') {
@@ -451,11 +451,15 @@
                         }
                     });
 
-                    // ⏱️ ⏬ मुकुंद जी, यहाँ रहा 72 घंटे वाला ऑटो-डिलीट लॉजिक ⏬
+                    // ⏱️ 🌟 सुधरा हुआ ७२ घंटे वाला लॉजिक—अब २ मिनट पुराना ग्राहक कभी डिलीट नहीं होगा!
                     if (lastTimestamp > 0 && (currentTime - lastTimestamp) > seventyTwoHoursInMs) {
-                        // अंतिम संदेश को 72 घंटे बीत चुके हैं, इसलिए इस फोल्डर को डिलीट करें
                         database.ref('chats/' + roomKey).remove();
-                        return; // सूची में जोड़ने से रोकें
+                        return; 
+                    }
+
+                    // अगर अभी-अभी लॉगिन किया है और कोई टाइमस्टैम्प नहीं बना है, तो उसे तुरंत डिलीट होने से बचाएं
+                    if (lastTimestamp === 0) {
+                        lastTimestamp = currentTime; 
                     }
 
                     hasRooms = true;
@@ -513,7 +517,7 @@
                         item.classList.add('selected');
                     }
                     
-                    var msgPreview = "";
+                    var msgPreview = "कोई संदेश नहीं है";
                     if(room.lastMsg) {
                         if(room.lastMsg.fileType === 'image' || room.lastMsg.text.startsWith('data:image')) {
                             msgPreview = '📸 फोटो भेजी है';
@@ -675,7 +679,8 @@
 
             database.ref('chats/' + cleanNum).child('cust_profile').set({
                 name: cleanNum,
-                phone: cleanNum
+                phone: cleanNum,
+                lastSeen: Date.now() // यहाँ टाइमस्टैम्प सेट किया ताकि डिलीट न हो
             }).then(() => {
                 localStorage.setItem('lastSeen_' + cleanNum, Date.now());
                 selectCustomer("room_" + cleanNum, cleanNum);
@@ -716,6 +721,11 @@
                 timestamp: Date.now()
             };
 
+            // एडमिन प्रोफाइल का टाइमस्टैम्प अपडेट करें
+            database.ref('chats/' + actualRoomKey).child('cust_profile').update({
+                lastSeen: Date.now()
+            });
+
             database.ref('chats/' + actualRoomKey).push(messageData);
         }
 
@@ -739,6 +749,11 @@
                         text: base64Image, 
                         timestamp: Date.now() 
                     };
+                    
+                    database.ref('chats/' + actualRoomKey).child('cust_profile').update({
+                        lastSeen: Date.now()
+                    });
+
                     database.ref('chats/' + actualRoomKey).push(messageData).then(() => {
                         fileInput.value = ""; 
                     });
@@ -760,6 +775,10 @@
                 text: text,
                 timestamp: Date.now()
             };
+
+            database.ref('chats/' + actualRoomKey).child('cust_profile').update({
+                lastSeen: Date.now()
+            });
 
             database.ref('chats/' + actualRoomKey).push(messageData)
             .then(() => {
@@ -799,7 +818,7 @@
             }
         }, {once: true});
 
-        // 🎤 ⏬ एडमिन पैनल के लिए नो-रिपीट वॉइस लॉजिक ⏬
+        // 🎤 वॉइस टू टेक्स्ट लॉजिक (एडमिन पैनल के लिए एकदम स्टेबल)
         let adminRecognition;
         let isAdminRecording = false;
 
