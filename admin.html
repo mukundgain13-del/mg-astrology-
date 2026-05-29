@@ -39,7 +39,6 @@
             border-bottom: 1px solid #005e4e;
         }
 
-        /* 🟢 मुकुंद जी, एडमिन पैनल के ऊपर कोने के लिए आपका ब्रांड लोगो */
         .admin-logo-img {
             width: 40px;
             height: 40px;
@@ -116,7 +115,6 @@
             flex: 1;
         }
 
-        /* 🟢 लाइव चमकीले बटन की स्टाइल */
         .live-green-badge {
             background-color: #00e676;
             color: white;
@@ -288,12 +286,12 @@
             background-color: #f0f2f5;
             padding: 10px 15px;
             display: flex;
-            align-items: flex-end; /* बड़ा मैसेज होने पर बटन नीचे टिका रहे */
+            align-items: flex-end; 
             gap: 10px;
             border-top: 1px solid #e1e9eb;
         }
         
-        .admin-upload-btn {
+        .admin-upload-btn, .admin-mic-btn {
             background: none;
             border: none;
             font-size: 22px;
@@ -303,9 +301,21 @@
             margin-bottom: 5px;
             display: flex;
             align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        /* 🎤 माइक ऑन होने पर ब्लिंक इफेक्ट */
+        .admin-mic-recording {
+            color: #d32f2f !important;
+            animation: adminMicPulse 1.2s infinite;
+        }
+
+        @keyframes adminMicPulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
         }
         
-        /* 📝 मुकुंद जी, यहाँ इनपुट को textarea स्टाइल दी है ताकि कीबोर्ड में तीर का निशान आए */
         .chat-input { 
             flex: 1; 
             padding: 10px 15px; 
@@ -328,7 +338,6 @@
         
         <div class="admin-header">
             <div class="header-left-area">
-                <!-- 🟢 यहाँ आपका ब्रांड लोगो सेट कर दिया है कोने में -->
                 <img src="https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg" class="admin-logo-img" alt="MG Logo">
                 <div class="header-title" id="mainHeaderTitle">MG ASTROLOGY</div>
             </div>
@@ -361,7 +370,9 @@
                 <button class="admin-upload-btn" onclick="openAdminGallery()">📎</button>
                 <input type="file" id="adminGalleryInput" accept="image/*" style="display:none;" onchange="adminImageSelected()">
                 
-                <!-- 📝 यह रहा बदला हुआ व्हाट्सएप स्टाइल एंटर-की वाला textarea बॉक्स -->
+                <!-- 🎤 एडमिन पैनल के लिए नो-रिपीट माइक बटन -->
+                <button class="admin-mic-btn" id="adminMicBtn" onclick="toggleAdminVoiceTyping()">🎤</button>
+                
                 <textarea class="chat-input" id="adminMsgInput" placeholder="अपना उत्तर टाइप करें..." rows="1"></textarea>
                 <button class="send-btn" onclick="adminSendMessage()">➤</button>
             </div>
@@ -408,11 +419,12 @@
                 var rooms = snapshot.val();
                 var hasRooms = false;
                 var roomArray = [];
+                const currentTime = Date.now();
+                const seventyTwoHoursInMs = 72 * 60 * 60 * 1000; // 72 घंटे मिलीसेकंड में
 
                 Object.keys(rooms).forEach((roomKey) => {
                     if(roomKey === 'apiKey' || roomKey === 'authDomain' || roomKey === 'projectId' || roomKey === 'storageBucket' || roomKey === 'messagingSenderId' || roomKey === 'appId' || roomKey === 'measurementId' || typeof rooms[roomKey] !== 'object') return;
 
-                    hasRooms = true;
                     var roomData = rooms[roomKey];
                     var keys = Object.keys(roomData);
                     
@@ -420,9 +432,8 @@
                     var unreadCount = 0;
                     var lastTimestamp = 0;
                     var isNewClient = true; 
-                    var isOnline = false; // 🟢 डिफ़ॉल्ट ऑफलाइन स्थिति
+                    var isOnline = false; 
 
-                    // प्रोफाइल से लाइव ऑनलाइन सिग्नल की जांच करना
                     if(roomData.cust_profile && roomData.cust_profile.online === true) {
                         isOnline = true;
                     }
@@ -439,6 +450,15 @@
                             }
                         }
                     });
+
+                    // ⏱️ ⏬ मुकुंद जी, यहाँ रहा 72 घंटे वाला ऑटो-डिलीट लॉजिक ⏬
+                    if (lastTimestamp > 0 && (currentTime - lastTimestamp) > seventyTwoHoursInMs) {
+                        // अंतिम संदेश को 72 घंटे बीत चुके हैं, इसलिए इस फोल्डर को डिलीट करें
+                        database.ref('chats/' + roomKey).remove();
+                        return; // सूची में जोड़ने से रोकें
+                    }
+
+                    hasRooms = true;
 
                     if (selectedCustomerId !== "room_" + roomKey) {
                         keys.forEach((key) => {
@@ -468,7 +488,6 @@
                 roomArray.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 
                 roomArray.forEach((room) => {
-                    // 📝 मुकुंद जी, यहाँ साफ़ सुथरा व्हाट्सएप स्टाइल लेआउट (सिर्फ एक जगह मोबाइल नंबर) सेट किया है
                     var displayTitle = room.roomKey; 
                     
                     if (initialLoadDone) {
@@ -506,8 +525,6 @@
                     }
                     
                     var newTagHtml = room.isNewClient ? `<span class="new-client-tag">NEW</span>` : '';
-                    
-                    // 🟢 ग्राहक ऑनलाइन होने पर Live टैग जोड़ने का लॉजिक
                     var liveTagHtml = room.isOnline ? `<span class="live-green-badge">Live 🟢</span>` : '';
 
                     var leftBox = document.createElement('div');
@@ -747,7 +764,7 @@
             database.ref('chats/' + actualRoomKey).push(messageData)
             .then(() => {
                 input.value = "";
-                input.style.height = '40px'; /* सेंड करने के बाद डिब्बा वापस नॉर्मल हो जाए */
+                input.style.height = '40px'; 
             });
         }
 
@@ -764,7 +781,6 @@
             }
         }
 
-        // 📝 टेक्स्ट की लंबाई के हिसाब से इनपुट बॉक्स का आकार एडजस्ट करने का लॉजिक
         const adminTx = document.getElementById('adminMsgInput');
         adminTx.addEventListener("input", OnAdminInput, false);
 
@@ -782,6 +798,75 @@
                 }).catch(e => {});
             }
         }, {once: true});
+
+        // 🎤 ⏬ एडमिन पैनल के लिए नो-रिपीट वॉइस लॉजिक ⏬
+        let adminRecognition;
+        let isAdminRecording = false;
+
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            adminRecognition = new SpeechRecognition();
+            
+            adminRecognition.continuous = false; 
+            adminRecognition.interimResults = false; 
+            adminRecognition.lang = 'hi-IN'; 
+
+            adminRecognition.onresult = function(event) {
+                const resultIndex = event.resultIndex;
+                const finalTranscript = event.results[resultIndex][0].transcript;
+                const inputField = document.getElementById('adminMsgInput');
+                
+                if(finalTranscript !== '') {
+                    if (inputField.value.trim() === "") {
+                        inputField.value = finalTranscript + ' ';
+                    } else {
+                        inputField.value += finalTranscript + ' ';
+                    }
+                    OnAdminInput.call(inputField); 
+                }
+            };
+
+            adminRecognition.onerror = function(event) {
+                console.error("एडमिन माइक एरर:", event.error);
+                stopAdminRecording();
+            };
+
+            adminRecognition.onend = function() {
+                stopAdminRecording();
+            };
+        } else {
+            document.getElementById('adminMicBtn').style.display = 'none';
+            console.log("यह ब्राउज़र वॉइस टाइपिंग सपोर्ट नहीं करता है।");
+        }
+
+        function toggleAdminVoiceTyping() {
+            if (!adminRecognition) return;
+            if (isAdminRecording) {
+                stopAdminRecording();
+            } else {
+                startAdminRecording();
+            }
+        }
+
+        function startAdminRecording() {
+            isAdminRecording = true;
+            try {
+                adminRecognition.start();
+                document.getElementById('adminMicBtn').classList.add('admin-mic-recording');
+                document.getElementById('adminMsgInput').placeholder = "सुन रहा हूँ... बोलिए...";
+            } catch(e) {
+                console.log(e);
+            }
+        }
+
+        function stopAdminRecording() {
+            isAdminRecording = false;
+            try {
+                adminRecognition.stop();
+            } catch(e) {}
+            document.getElementById('adminMicBtn').classList.remove('admin-mic-recording');
+            document.getElementById('adminMsgInput').placeholder = "अपना उत्तर टाइप करें...";
+        }
     </script>
 </body>
 </html>
