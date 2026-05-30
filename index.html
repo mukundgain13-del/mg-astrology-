@@ -110,6 +110,7 @@
         }
         .login-btn:hover { background-color: #008069; }
 
+        /* 📥 मुकुंद जी, आपका पुराना डिज़ाइन बिल्कुल सुरक्षित है */
         .download-app-btn {
             width: 100%;
             padding: 12px;
@@ -170,6 +171,13 @@
         .modal-list { padding-left: 20px; font-size: 14px; color: #333; line-height: 1.7; }
         .modal-list li { margin-bottom: 10px; }
         .close-modal-btn { display: block; width: 100%; padding: 12px; background-color: #00a884; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
+
+        /* 🌟 गाइड पॉप-अप की सुंदर स्टाइलिंग */
+        .guide-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .guide-content { background-color: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .guide-title { font-size: 19px; font-weight: bold; color: #005e4e; margin-bottom: 15px; }
+        .guide-steps { text-align: left; font-size: 15px; color: #333; line-height: 1.6; margin-bottom: 20px; padding-left: 5px; }
+        .guide-close-btn { display: block; width: 100%; padding: 12px; background-color: #00a884; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; text-align: center; }
     </style>
 </head>
 <body>
@@ -186,8 +194,8 @@
             
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
             
-            <!-- मुकुंद जी, यहाँ पर नया डायरेक्ट एक्शन सेट है -->
-            <button id="btnDownloadApp" class="download-app-btn" onclick="triggerAppInstall()">डाउनलोड ऐप 📥</button>
+            <!-- बटन का पुराना डिज़ाइन वैसा ही रहेगा, बस क्लिक करने पर openGuide() चलेगा -->
+            <button id="btnDownloadApp" class="download-app-btn" onclick="openGuide()">डाउनलोड ऐप 📥</button>
             <div id="downloadSubText" class="download-sub-text">यहां से डाउनलोड करें</div>
         </div>
 
@@ -240,9 +248,25 @@
         </div>
     </div>
 
+    <!-- 🌟 नया गाइड पॉप-अप बॉक्स -->
+    <div class="guide-modal" id="appGuideModal">
+        <div class="guide-content">
+            <div class="guide-title">📱 ऐप डाउनलोड (इंस्टॉल) कैसे करें?</div>
+            <div class="guide-steps">
+                1. अपने ब्राउज़र में सबसे ऊपर सीधे हाथ पर कोने में बने <b>तीन बिंदुओं (⋮)</b> या <b>तीर के निशान</b> पर क्लिक करें।<br><br>
+                2. खुलने वाले मेनू में थोड़ा नीचे जाकर <b>"Add to Home Screen"</b> या <b>"Install App"</b> के विकल्प को चुनें।
+            </div>
+            <button class="guide-close-btn" onclick="closeGuide()">ठीक है, समझ गया</button>
+        </div>
+    </div>
+
     <script>
         function openTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
+        
+        // गाइड खोलने और बंद करने का फंक्शन
+        function openGuide() { document.getElementById('appGuideModal').style.display = 'flex'; }
+        function closeGuide() { document.getElementById('appGuideModal').style.display = 'none'; }
 
         function loginAndGo() {
             var phone = document.getElementById('custPhone').value.trim();
@@ -252,30 +276,6 @@
             localStorage.setItem('currentCustName', cleanPhone);
             localStorage.setItem('currentCustPhone', cleanPhone);
             window.location.href = "chat.html";
-        }
-
-        // 🌟 पुराना जिद्दी अलर्ट वाला पूरा कोड साफ कर दिया गया है
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-        });
-
-        function triggerAppInstall() {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    deferredPrompt = null;
-                });
-            } else {
-                // क्रोम की मेमोरी को बाईपास करके सीधे एंड्रॉइड शॉर्टकट खोलने का सिस्टम
-                try {
-                    window.location.href = "intent://" + window.location.host + "#Intent;scheme=https;action=android.intent.action.VIEW;end;";
-                } catch (err) {
-                    // अगर फोन बहुत पुराना है तो ही यह खुलेगा, कोई पुराना मैसेज नहीं आएगा
-                    console.log("Intent not supported");
-                }
-            }
         }
     </script>
 </body>
