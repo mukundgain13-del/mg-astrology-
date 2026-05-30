@@ -41,7 +41,6 @@
             z-index: 999;
         }
 
-        /* 🟢 मुकुंद जी, ऊपर बाएं कोने पर आपका असली गोल लोगो */
         .designer-logo-img {
             width: 44px;
             height: 44px;
@@ -111,7 +110,7 @@
         }
         .login-btn:hover { background-color: #008069; }
 
-        /* 📥 मुकुंद जी, डायरेक्ट डाउनलोड ऐप बटन की स्टाइल (इसे शुरू में छुपा कर रखेंगे जब तक ब्राउज़र तैयार न हो) */
+        /* 📥 मुकुंद जी, यह बटन अब हमेशा (Permanent) स्क्रीन पर दिखेगा, कोई कंडीशन इसे नहीं छुपाएगी */
         .download-app-btn {
             width: 100%;
             padding: 12px;
@@ -123,7 +122,7 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 12px;
-            display: none; 
+            display: flex !important; /* हमेशा दिखाने के लिए फोर्स किया गया है */
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -133,7 +132,7 @@
 
         /* बटन के नीचे छोटे अक्षरों की स्टाइल */
         .download-sub-text {
-            display: none; 
+            display: block !important; /* हमेशा दिखाने के लिए फोर्स किया गया है */
             color: #666; 
             font-size: 12px; 
             margin-top: 6px; 
@@ -165,7 +164,6 @@
         .services-list { list-style: none; font-size: 16px; color: #4a4a4a; line-height: 2; margin-bottom: 20px; }
         .contact-info-footer { border-top: 1px dashed #ccc; padding-top: 15px; font-size: 16px; color: #333; font-weight: bold; line-height: 1.6; text-align: left; }
         
-        /* 🛡️ कॉपीराइट टेक्स्ट की सुंदर स्टाइलिंग */
         .copyright-footer { font-size: 11px; color: #666; margin-top: 15px; border-top: 1px solid #eee; padding-top: 12px; text-align: center; line-height: 1.5; }
 
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
@@ -190,7 +188,7 @@
             
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
             
-            <!-- मुकुंद जी, यह रहा नया डायरेक्ट डाउनलोड बटन और नीचे छोटा टेक्स्ट -->
+            <!-- बटन और नीचे का टेक्स्ट हमेशा दिखने के लिए सेट है -->
             <button id="btnDownloadApp" class="download-app-btn" onclick="triggerAppInstall()">डाउनलोड ऐप 📥</button>
             <div id="downloadSubText" class="download-sub-text">यहां से डाउनलोड करें</div>
         </div>
@@ -258,46 +256,32 @@
             window.location.href = "chat.html";
         }
 
-        // 🌟 मुकुंद जी, यहाँ से नया जादुई डायरेक्ट डाउनलोड लॉजिक शुरू होता है
+        // 🌟 फुल-प्रूफ इंस्टॉल लॉजिक जो बटन को कभी हाइड नहीं होने देगा
         let deferredPrompt;
-        const downloadBtn = document.getElementById('btnDownloadApp');
-        const subText = document.getElementById('downloadSubText');
 
         window.addEventListener('beforeinstallprompt', (e) => {
-            // ब्राउज़र के डिफ़ॉल्ट पॉप-अप को रोकें
             e.preventDefault();
-            // प्रॉम्प्ट को स्टोर करें
             deferredPrompt = e;
-            // अब बटन और छोटे अक्षरों वाले टेक्स्ट को स्क्रीन पर दिखाएं
-            downloadBtn.style.display = 'flex';
-            subText.style.display = 'block';
+            // बटन हमेशा दिख रहा है, इसलिए यहाँ कुछ छुपाने/दिखाने की जरूरत नहीं है
         });
 
         function triggerAppInstall() {
             if (deferredPrompt) {
-                // सीधे इंस्टॉल का ओरिजिनल बॉक्स स्क्रीन पर लाएं
+                // अगर ब्राउज़र सपोर्टेड है, तो डायरेक्ट ऑफिशियल पॉप-अप फेंकें
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
                     if (choiceResult.outcome === 'accepted') { 
-                        console.log('User installed the app'); 
+                        console.log('User installed the app via button'); 
                     }
                     deferredPrompt = null;
-                    // इंस्टॉल होने के बाद बटन छुपाएं
-                    downloadBtn.style.display = 'none';
-                    subText.style.display = 'none';
                 });
             } else {
-                // अगर ऐप पहले से इंस्टॉल है या ब्राउज़र सपोर्ट नहीं कर रहा, तब यह बैकअप मैसेज दिखाएगा
-                alert("यह ऐप या तो आपके फोन में पहले से डाउनलोड है, या फिर डाउनलोड करने के लिए ऊपर कोने में दिख रहे तीन बिंदुओं (Three Dots) पर क्लिक करके 'Add to Home Screen' चुनें।");
+                // बैकअप तरीका: अगर क्रोम ने डिटेक्ट नहीं किया, तो कस्टमर को साफ रास्ता बताएं ताकि वो भटके नहीं
+                alert("ऐप तुरंत डाउनलोड करने के लिए:\n1. ऊपर कोने में बने तीन बिंदुओं (3 Dots) पर क्लिक करें।\n2. वहाँ 'Add to Home Screen' या 'Install App' का विकल्प दबाएं।");
             }
         }
 
-        // अगर ऐप सफलता से इंस्टॉल हो जाता है, तो बटन को गायब कर दें
-        window.addEventListener('appinstalled', () => {
-            downloadBtn.style.display = 'none';
-            subText.style.display = 'none';
-            deferredPrompt = null;
-        });
+        // ऐप इंस्टॉल होने के बाद भी बटन स्क्रीन पर जमा रहेगा ताकि पुराना लुक न बिगड़े
     </script>
 </body>
 </html>
