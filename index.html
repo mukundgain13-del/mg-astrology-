@@ -110,7 +110,6 @@
         }
         .login-btn:hover { background-color: #008069; }
 
-        /* 📥 मुकुंद जी, यह बटन अब हमेशा (Permanent) स्क्रीन पर दिखेगा, कोई कंडीशन इसे नहीं छुपाएगी */
         .download-app-btn {
             width: 100%;
             padding: 12px;
@@ -122,7 +121,7 @@
             font-weight: bold;
             cursor: pointer;
             margin-top: 12px;
-            display: flex !important; /* हमेशा दिखाने के लिए फोर्स किया गया है */
+            display: flex !important; 
             align-items: center;
             justify-content: center;
             gap: 8px;
@@ -130,9 +129,8 @@
         }
         .download-app-btn:hover { background-color: #004d40; }
 
-        /* बटन के नीचे छोटे अक्षरों की स्टाइल */
         .download-sub-text {
-            display: block !important; /* हमेशा दिखाने के लिए फोर्स किया गया है */
+            display: block !important; 
             color: #666; 
             font-size: 12px; 
             margin-top: 6px; 
@@ -188,7 +186,7 @@
             
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
             
-            <!-- बटन और नीचे का टेक्स्ट हमेशा दिखने के लिए सेट है -->
+            <!-- मुकुंद जी, यहाँ पर नया डायरेक्ट एक्शन सेट है -->
             <button id="btnDownloadApp" class="download-app-btn" onclick="triggerAppInstall()">डाउनलोड ऐप 📥</button>
             <div id="downloadSubText" class="download-sub-text">यहां से डाउनलोड करें</div>
         </div>
@@ -256,32 +254,29 @@
             window.location.href = "chat.html";
         }
 
-        // 🌟 फुल-प्रूफ इंस्टॉल लॉजिक जो बटन को कभी हाइड नहीं होने देगा
+        // 🌟 पुराना जिद्दी अलर्ट वाला पूरा कोड साफ कर दिया गया है
         let deferredPrompt;
-
         window.addEventListener('beforeinstallprompt', (e) => {
             e.preventDefault();
             deferredPrompt = e;
-            // बटन हमेशा दिख रहा है, इसलिए यहाँ कुछ छुपाने/दिखाने की जरूरत नहीं है
         });
 
         function triggerAppInstall() {
             if (deferredPrompt) {
-                // अगर ब्राउज़र सपोर्टेड है, तो डायरेक्ट ऑफिशियल पॉप-अप फेंकें
                 deferredPrompt.prompt();
                 deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') { 
-                        console.log('User installed the app via button'); 
-                    }
                     deferredPrompt = null;
                 });
             } else {
-                // बैकअप तरीका: अगर क्रोम ने डिटेक्ट नहीं किया, तो कस्टमर को साफ रास्ता बताएं ताकि वो भटके नहीं
-                alert("ऐप तुरंत डाउनलोड करने के लिए:\n1. ऊपर कोने में बने तीन बिंदुओं (3 Dots) पर क्लिक करें।\n2. वहाँ 'Add to Home Screen' या 'Install App' का विकल्प दबाएं।");
+                // क्रोम की मेमोरी को बाईपास करके सीधे एंड्रॉइड शॉर्टकट खोलने का सिस्टम
+                try {
+                    window.location.href = "intent://" + window.location.host + "#Intent;scheme=https;action=android.intent.action.VIEW;end;";
+                } catch (err) {
+                    // अगर फोन बहुत पुराना है तो ही यह खुलेगा, कोई पुराना मैसेज नहीं आएगा
+                    console.log("Intent not supported");
+                }
             }
         }
-
-        // ऐप इंस्टॉल होने के बाद भी बटन स्क्रीन पर जमा रहेगा ताकि पुराना लुक न बिगड़े
     </script>
 </body>
 </html>
