@@ -5,18 +5,19 @@
     {
       "src": "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg",
       "type": "image/jpeg",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg",
       "type": "image/jpeg",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": "/index.html",
-  "background_color": "#008069",
+  "background_color": "#005e4e",
   "display": "standalone",
-  "theme_color": "#008069",
+  "theme_color": "#005e4e",
   "orientation": "portrait"
 }
-
