@@ -271,11 +271,9 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 🚀 बैकग्राउंड में लॉगिन शुरू करना
+        // पेज लोड होते ही बैकग्राउंड में लॉगिन का प्रयास करें
         if (firebase.auth) {
-            firebase.auth().signInAnonymously().catch((error) => {
-                console.error("Auth init error:", error.message);
-            });
+            firebase.auth().signInAnonymously().catch((e) => console.log("Init login:", e.message));
         }
 
         const custName = localStorage.getItem('currentCustName') || "Anonymous";
@@ -389,19 +387,19 @@
             if(deletedDiv) deletedDiv.remove();
         });
 
-        // 🚀 मैसेज सेंड को ताले के साथ सिंक करने का बिल्कुल सही तरीका
+        // 🚀 सेंड करने से ठीक पहले ताले (Auth) को वेरिफाई करने वाला पक्का फंक्शन
         function sendMessage() {
             const input = document.getElementById('msgInput');
             const text = input.value.trim();
             if(text === "") return;
 
-            // अगर किसी वजह से सेशन सिंक नहीं है तो तुरंत ऑथेंटिकेट करें
             if (firebase.auth && !firebase.auth().currentUser) {
-                firebase.auth().signInAnonymously().then(() => {
-                    executeSend(text, input);
-                }).catch(() => {
-                    executeSend(text, input); // सेफ साइड फ़ॉलबैक
-                });
+                firebase.auth().signInAnonymously()
+                    .then(() => { executeSend(text, input); })
+                    .catch((err) => { 
+                        console.error("Auth layer retry failed:", err);
+                        executeSend(text, text); // फॉलबैक प्रयास
+                    });
             } else {
                 executeSend(text, input);
             }
@@ -425,6 +423,8 @@
             database.ref('chats/' + myRoomId).push(messageData).then(() => {
                 input.value = "";
                 input.style.height = '40px'; 
+            }).catch((e) => {
+                console.error("फायरबेस सुरक्षा ब्लॉक एरर:", e.message);
             });
         }
 
@@ -449,18 +449,27 @@
                 
                 reader.onload = function(e) {
                     const base64Image = e.target.result;
-                    const messageData = { 
-                        sender: "customer", 
-                        text: base64Image, 
-                        timestamp: Date.now(),
-                        fileType: "image"
-                    };
-                    database.ref('chats/' + myRoomId).push(messageData).then(() => {
-                        fileInput.value = ""; 
-                    });
+                    
+                    if (firebase.auth && !firebase.auth().currentUser) {
+                        firebase.auth().signInAnonymously().then(() => { sendImageExecute(base64Image, fileInput); });
+                    } else {
+                        sendImageExecute(base64Image, fileInput);
+                    }
                 };
                 reader.readAsDataURL(file);
             }
+        }
+
+        function sendImageExecute(base64Image, fileInput) {
+            const messageData = { 
+                sender: "customer", 
+                text: base64Image, 
+                timestamp: Date.now(),
+                fileType: "image"
+            };
+            database.ref('chats/' + myRoomId).push(messageData).then(() => {
+                fileInput.value = ""; 
+            });
         }
 
         const tx = document.getElementById('msgInput');
@@ -508,7 +517,6 @@
             };
         } else {
             document.getElementById('micBtn').style.display = 'none';
-            console.log("यह ब्राउज़र वॉइस टाइपिंग सपोर्ट नहीं करता है।");
         }
 
         function toggleVoiceTyping() {
