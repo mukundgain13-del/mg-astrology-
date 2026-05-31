@@ -7,10 +7,6 @@
     
     <link rel="manifest" href="manifest.json">
 
-    <!-- फायरबेस का लॉगिन सिस्टम (Authentication) चालू करने के लिए ये दो लाइनें जरूरी हैं -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -213,7 +209,7 @@
                 <li>🎓 शिक्षा और विदेश योग</li>
                 <li>✨ प्रभावी ज्योतिष उपाय</li>
                 <li>🏠 वास्तु दोष निवारण</li>
-                <li>⚖️ कानूनी विवाद और कोर्ट充केस</li>
+                <li>⚖️ कानूनी विवाद और कोर्ट केस</li>
                 <li>👨‍👩‍👧‍👦 पारिवारिक शांति और गृह क्लेश</li>
                 <li>🧿 नजर दोष और सुरक्षा कवच</li>
                 <li>👶 संतान सुख और भविष्य</li>
@@ -243,7 +239,7 @@
                 <li>लॉगिन करते समय सही सक्रिय मोबाइल नंबर देना अनिवार्य है। गलत जानकारी पर तुरंत ब्लॉक कर दिया जाएगा।</li>
                 <li>चैट बॉक्स में किसी भी प्रकार की अभद्र भाषा या फालतू बहस करने पर बिना किसी पूर्व सूचना के तुरंत स्थायी रूप से ब्लॉक (Block) कर दिया जाएगा।</li>
                 <li style="font-weight: bold; color: #d32f2f;">एक बार शुल्क जमा होने के बाद किसी भी परिस्थिति में FEES REFUND (वापस) नहीं की जाएगी। परामर्श केवल आपके द्वारा दिए गए जन्म विवरण के आधार पर ही मान्य होगा।</li>
-                <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
+                <li style="font-weight: bold;">ज्योतिष परामर्श एक व्यक्तिगत विश्वास का विषय है। किसी भी प्रकार के वाद-विवाद या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, taxation या कानूनी स्थिति में न्यायिक क्षेत्राधिकार केवल रुद्रपुर, उत्तराखंड (भारत) की अदालत ही मान्य होगी।</li>
             </ol>
             <button class="close-modal-btn" onclick="closeTerms()">शर्तें स्वीकार हैं / बंद करें</button>
         </div>
@@ -273,27 +269,17 @@
             var cleanPhone = phone.replace(/[^0-9]/g, "");
             if(cleanPhone.length < 10) { alert("कृपया सही और पूरा 10 अंकों का मोबाइल नंबर लिखें।"); return; }
             
-            // 🚀 यहाँ आपका लाइफ-टाइम ताला खोलने वाला नया कोड जोड़ा गया है:
+            localStorage.setItem('currentCustName', cleanPhone);
+            localStorage.setItem('currentCustPhone', cleanPhone);
+            
+            // 🚀 यहाँ वह सिंगल लाइन जोड़ी गई है जो 'chat.html' पर पहुँचते ही टाइपिंग का ताला खोल देगी
             if (typeof firebase !== 'undefined' && firebase.auth) {
-                firebase.auth().signInAnonymously()
-                    .then(() => {
-                        localStorage.setItem('currentCustName', cleanPhone);
-                        localStorage.setItem('currentCustPhone', cleanPhone);
-                        window.location.href = "chat.html";
-                    })
-                    .catch((error) => {
-                        console.error("फायरबेस ताला खोलने में एरर आया: ", error.message);
-                        // अगर कोई गड़बड़ हो तो भी यूजर अंदर जा सके
-                        localStorage.setItem('currentCustName', cleanPhone);
-                        localStorage.setItem('currentCustPhone', cleanPhone);
-                        window.location.href = "chat.html";
-                    });
-            } else {
-                // अगर फायरबेस लोड न हुआ हो तो सीधा अंदर भेजें
-                localStorage.setItem('currentCustName', cleanPhone);
-                localStorage.setItem('currentCustPhone', cleanPhone);
-                window.location.href = "chat.html";
+                firebase.auth().signInAnonymously().catch(function(error) {
+                    console.error("Firebase auth background setup:", error.message);
+                });
             }
+            
+            window.location.href = "chat.html";
         }
     </script>
 </body>
