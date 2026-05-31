@@ -6,6 +6,8 @@
     <title>MG ASTROLOGY - Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <!-- 🚀 ऑथेंटिकेशन लाइब्रेरी यहाँ जोड़ी गई है ताकि ताला खुल सके -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -393,11 +395,19 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // 🚀 एडमिन पैनल का ताला खोलने के लिए ऑटो-लॉगिन फंक्शन यहाँ चालू किया गया है
+        if (firebase.auth) {
+            firebase.auth().signInAnonymously()
+                .then(() => { console.log("Admin Panel Security Cleared"); })
+                .catch((e) => { console.error("Admin Auth Error:", e.message); });
+        }
+
         var selectedCustomerId = null;
         var selectedCustomerName = "";
         var lastMessagesCounts = {}; 
         var initialLoadDone = false; 
         var currentLiveRef = null; 
+        var globalRoomsData = {}; // ⚡ स्पीड बूस्टर: मेमोरी में डेटा होल्ड करने के लिए
 
         const notificationSound = new Audio('https://assets.mixkit.co/active_storage/sfx/2357/2357-84.wav');
 
@@ -405,178 +415,187 @@
             Notification.requestPermission();
         }
 
-        database.ref('chats').on('value', (snapshot) => {
+        // ⚡ सुपर-फास्ट ऑप्टिमाइज्ड लोडिंग लॉजिक: अब बार-बार पूरा भारी डेटा रिलोड नहीं होगा
+        database.ref('chats').on('child_added', (childSnapshot) => {
+            globalRoomsData[childSnapshot.key] = childSnapshot.val();
+            renderCustomerList();
+        });
+
+        database.ref('chats').on('child_changed', (childSnapshot) => {
+            globalRoomsData[childSnapshot.key] = childSnapshot.val();
+            renderCustomerList();
+        });
+
+        database.ref('chats').on('child_removed', (childSnapshot) => {
+            delete globalRoomsData[childSnapshot.key];
+            renderCustomerList();
+        });
+
+        function renderCustomerList() {
             const customerListWindow = document.getElementById('customerListWindow');
             const emptyNotice = document.getElementById('emptyNotice');
             
             customerListWindow.innerHTML = '';
             
-            if (snapshot.exists()) {
-                if(emptyNotice) emptyNotice.style.display = 'none';
+            var hasRooms = false;
+            var roomArray = [];
+            const currentTime = Date.now();
+            const seventyTwoHoursInMs = 72 * 60 * 60 * 1000; 
+
+            Object.keys(globalRoomsData).forEach((roomKey) => {
+                if(roomKey === 'apiKey' || roomKey === 'authDomain' || roomKey === 'projectId' || roomKey === 'storageBucket' || roomKey === 'messagingSenderId' || roomKey === 'appId' || roomKey === 'measurementId' || typeof globalRoomsData[roomKey] !== 'object') return;
+
+                var roomData = globalRoomsData[roomKey];
+                var keys = Object.keys(roomData);
                 
-                var rooms = snapshot.val();
-                var hasRooms = false;
-                var roomArray = [];
-                const currentTime = Date.now();
-                const seventyTwoHoursInMs = 72 * 60 * 60 * 1000; 
+                var lastMsg = null;
+                var unreadCount = 0;
+                var lastTimestamp = 0;
+                var isNewClient = true; 
+                var isOnline = false; 
 
-                Object.keys(rooms).forEach((roomKey) => {
-                    if(roomKey === 'apiKey' || roomKey === 'authDomain' || roomKey === 'projectId' || roomKey === 'storageBucket' || roomKey === 'messagingSenderId' || roomKey === 'appId' || roomKey === 'measurementId' || typeof rooms[roomKey] !== 'object') return;
+                if(roomData.cust_profile) {
+                    if(roomData.cust_profile.online === true) isOnline = true;
+                    if(roomData.cust_profile.lastSeen) lastTimestamp = roomData.cust_profile.lastSeen;
+                }
 
-                    var roomData = rooms[roomKey];
-                    var keys = Object.keys(roomData);
-                    
-                    var lastMsg = null;
-                    var unreadCount = 0;
-                    var lastTimestamp = 0;
-                    var isNewClient = true; 
-                    var isOnline = false; 
-
-                    // 🛠️ सुरक्षा सुधार: अगर प्रोफाइल में लास्टसीन टाइमस्टैम्प है, तो उसे बेस बनाएं
-                    if(roomData.cust_profile) {
-                        if(roomData.cust_profile.online === true) isOnline = true;
-                        if(roomData.cust_profile.lastSeen) lastTimestamp = roomData.cust_profile.lastSeen;
-                    }
-
-                    keys.forEach((key) => {
-                        if(key !== 'cust_profile' && roomData[key].sender) {
-                            var msg = roomData[key];
-                            lastMsg = msg;
-                            if(msg.timestamp && msg.timestamp > lastTimestamp) {
-                                lastTimestamp = msg.timestamp;
-                            }
-                            if(msg.sender === 'admin') {
-                                isNewClient = false;
-                            }
+                keys.forEach((key) => {
+                    if(key !== 'cust_profile' && roomData[key].sender) {
+                        var msg = roomData[key];
+                        lastMsg = msg;
+                        if(msg.timestamp && msg.timestamp > lastTimestamp) {
+                            lastTimestamp = msg.timestamp;
                         }
-                    });
-
-                    // ⏱️ 🌟 सुधरा हुआ ७२ घंटे वाला लॉजिक—अब २ मिनट पुराना ग्राहक कभी डिलीट नहीं होगा!
-                    if (lastTimestamp > 0 && (currentTime - lastTimestamp) > seventyTwoHoursInMs) {
-                        database.ref('chats/' + roomKey).remove();
-                        return; 
+                        if(msg.sender === 'admin') {
+                            isNewClient = false;
+                        }
                     }
-
-                    // अगर अभी-अभी लॉगिन किया है और कोई टाइमस्टैम्प नहीं बना है, तो उसे तुरंत डिलीट होने से बचाएं
-                    if (lastTimestamp === 0) {
-                        lastTimestamp = currentTime; 
-                    }
-
-                    hasRooms = true;
-
-                    if (selectedCustomerId !== "room_" + roomKey) {
-                        keys.forEach((key) => {
-                            if(key !== 'cust_profile' && roomData[key].sender === 'customer') {
-                                var lastSeen = localStorage.getItem('lastSeen_' + roomKey) || 0;
-                                if(roomData[key].timestamp > lastSeen) {
-                                    unreadCount++;
-                                }
-                            }
-                        });
-                    }
-                    
-                    var savedName = (roomData.cust_profile && roomData.cust_profile.name) ? roomData.cust_profile.name : "नया ग्राहक";
-                    
-                    roomArray.push({
-                        roomKey: roomKey,
-                        savedName: savedName,
-                        lastMsg: lastMsg,
-                        unreadCount: unreadCount,
-                        lastTimestamp: lastTimestamp,
-                        isNewClient: isNewClient,
-                        totalKeys: keys.length,
-                        isOnline: isOnline
-                    });
                 });
 
-                roomArray.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
+                if (lastTimestamp > 0 && (currentTime - lastTimestamp) > seventyTwoHoursInMs) {
+                    database.ref('chats/' + roomKey).remove();
+                    return; 
+                }
 
-                roomArray.forEach((room) => {
-                    var displayTitle = room.roomKey; 
-                    
-                    if (initialLoadDone) {
-                        var oldCount = lastMessagesCounts[room.roomKey] || 0;
-                        if (room.totalKeys > oldCount && room.lastMsg && room.lastMsg.sender === "customer") {
-                            notificationSound.play().catch(e => console.log("Sound error"));
-                            
-                            if (Notification.permission === "granted") {
-                                var textBody = room.lastMsg.fileType === 'image' ? "📸 फोटो भेजी है" : room.lastMsg.text;
-                                new Notification("🔮 MG ASTROLOGY", { 
-                                    body: "नया संदेश (" + room.roomKey + "): " + textBody.substring(0, 40),
-                                    icon: "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg"
-                                });
+                if (lastTimestamp === 0) {
+                    lastTimestamp = currentTime; 
+                }
+
+                hasRooms = true;
+
+                if (selectedCustomerId !== "room_" + roomKey) {
+                    keys.forEach((key) => {
+                        if(key !== 'cust_profile' && roomData[key].sender === 'customer') {
+                            var lastSeen = localStorage.getItem('lastSeen_' + roomKey) || 0;
+                            if(roomData[key].timestamp > lastSeen) {
+                                unreadCount++;
                             }
                         }
-                    }
-                    lastMessagesCounts[room.roomKey] = room.totalKeys;
+                    });
+                }
+                
+                var savedName = (roomData.cust_profile && roomData.cust_profile.name) ? roomData.cust_profile.name : "नया ग्राहक";
+                
+                roomArray.push({
+                    roomKey: roomKey,
+                    savedName: savedName,
+                    lastMsg: lastMsg,
+                    unreadCount: unreadCount,
+                    lastTimestamp: lastTimestamp,
+                    isNewClient: isNewClient,
+                    totalKeys: keys.length,
+                    isOnline: isOnline
+                });
+            });
 
-                    var item = document.createElement('div');
-                    item.className = "customer-item";
-                    item.id = "room_" + room.roomKey;
-                    if(selectedCustomerId === "room_" + room.roomKey) {
-                        item.classList.add('selected');
-                    }
-                    
-                    var msgPreview = "कोई संदेश नहीं है";
-                    if(room.lastMsg) {
-                        if(room.lastMsg.fileType === 'image' || room.lastMsg.text.startsWith('data:image')) {
-                            msgPreview = '📸 फोटो भेजी है';
-                        } else if(room.lastMsg.text.includes('<img')) {
-                            msgPreview = '📸 भुगतान चेतावनी / QR कोड';
-                        } else {
-                            msgPreview = room.lastMsg.text.substring(0, 25);
-                        }
-                    }
-                    
-                    var newTagHtml = room.isNewClient ? `<span class="new-client-tag">NEW</span>` : '';
-                    var liveTagHtml = room.isOnline ? `<span class="live-green-badge">Live 🟢</span>` : '';
+            roomArray.sort((a, b) => b.lastTimestamp - a.lastTimestamp);
 
-                    var leftBox = document.createElement('div');
-                    leftBox.className = "customer-info-box";
-                    leftBox.innerHTML = `<strong>📱 ${displayTitle} ${liveTagHtml} ${newTagHtml}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
-                    
-                    leftBox.onclick = function() {
-                        localStorage.setItem('lastSeen_' + room.roomKey, Date.now());
-                        selectCustomer("room_" + room.roomKey, room.roomKey);
-                        openCustomerChat(room.roomKey);
-                    };
-                    item.appendChild(leftBox);
+            if(hasRooms && emptyNotice) {
+                emptyNotice.style.display = 'none';
+            }
 
-                    var rightArea = document.createElement('div');
-                    rightArea.className = "list-right-area";
-
-                    if(room.unreadCount > 0) {
-                        var badge = document.createElement('div');
-                        badge.className = "unread-badge";
-                        badge.innerText = room.unreadCount;
-                        rightArea.appendChild(badge);
-                    }
-
-                    var delFolderBtn = document.createElement('button');
-                    delFolderBtn.className = "list-delete-btn";
-                    delFolderBtn.innerText = "🗑️ डिलीट";
-                    delFolderBtn.onclick = function(e) {
-                        e.stopPropagation(); 
-                        var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + room.roomKey + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
-                        if(confirmBlock) {
-                            database.ref('chats/' + room.roomKey).remove().then(() => {
-                                alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
+            roomArray.forEach((room) => {
+                var displayTitle = room.roomKey; 
+                
+                if (initialLoadDone) {
+                    var oldCount = lastMessagesCounts[room.roomKey] || 0;
+                    if (room.totalKeys > oldCount && room.lastMsg && room.lastMsg.sender === "customer") {
+                        notificationSound.play().catch(e => console.log("Sound error"));
+                        
+                        if (Notification.permission === "granted") {
+                            var textBody = room.lastMsg.fileType === 'image' ? "📸 फोटो भेजी है" : room.lastMsg.text;
+                            new Notification("🔮 MG ASTROLOGY", { 
+                                body: "नया संदेश (" + room.roomKey + "): " + textBody.substring(0, 40),
+                                icon: "https://i.ibb.co/Kp2MLXYM/IMG-20260506-WA0036.jpg"
                             });
                         }
-                    };
-                    rightArea.appendChild(delFolderBtn);
-                    item.appendChild(rightArea);
-                    
-                    customerListWindow.appendChild(item);
-                });
+                    }
+                }
+                lastMessagesCounts[room.roomKey] = room.totalKeys;
 
-                if(!hasRooms) { showEmptyScreen(emptyNotice); }
-                initialLoadDone = true;
-            } else {
-                showEmptyScreen(emptyNotice);
-                initialLoadDone = true;
-            }
-        });
+                var item = document.createElement('div');
+                item.className = "customer-item";
+                item.id = "room_" + room.roomKey;
+                if(selectedCustomerId === "room_" + room.roomKey) {
+                    item.classList.add('selected');
+                }
+                
+                var msgPreview = "कोई संदेश नहीं है";
+                if(room.lastMsg) {
+                    if(room.lastMsg.fileType === 'image' || room.lastMsg.text.startsWith('data:image')) {
+                        msgPreview = '📸 फोटो भेजी है';
+                    } else if(room.lastMsg.text.includes('<img')) {
+                        msgPreview = '📸 भुगतान चेतावनी / QR कोड';
+                    } else {
+                        msgPreview = room.lastMsg.text.substring(0, 25);
+                    }
+                }
+                
+                var newTagHtml = room.isNewClient ? `<span class="new-client-tag">NEW</span>` : '';
+                var liveTagHtml = room.isOnline ? `<span class="live-green-badge">Live 🟢</span>` : '';
+
+                var leftBox = document.createElement('div');
+                leftBox.className = "customer-info-box";
+                leftBox.innerHTML = `<strong>📱 ${displayTitle} ${liveTagHtml} ${newTagHtml}</strong><span style="font-size:13px; color:#667781;">मैसेज: ${msgPreview}</span>`;
+                
+                leftBox.onclick = function() {
+                    localStorage.setItem('lastSeen_' + room.roomKey, Date.now());
+                    selectCustomer("room_" + room.roomKey, room.roomKey);
+                    openCustomerChat(room.roomKey);
+                };
+                item.appendChild(leftBox);
+
+                var rightArea = document.createElement('div');
+                rightArea.className = "list-right-area";
+
+                if(room.unreadCount > 0) {
+                    var badge = document.createElement('div');
+                    badge.className = "unread-badge";
+                    badge.innerText = room.unreadCount;
+                    rightArea.appendChild(badge);
+                }
+
+                var delFolderBtn = document.createElement('button');
+                delFolderBtn.className = "list-delete-btn";
+                delFolderBtn.innerText = "🗑️ डिलीट";
+                delFolderBtn.onclick = function(e) {
+                    e.stopPropagation(); 
+                    var confirmBlock = confirm("क्या आप सचमुच ग्राहक " + room.roomKey + " का पूरा फोल्डर हमेशा के लिए डिलीट करना चाहते हैं?");
+                    if(confirmBlock) {
+                        database.ref('chats/' + room.roomKey).remove().then(() => {
+                            alert("ग्राहक का फोल्डर साफ़ कर दिया गया है!");
+                        });
+                    }
+                };
+                rightArea.appendChild(delFolderBtn);
+                item.appendChild(rightArea);
+                
+                customerListWindow.appendChild(item);
+            });
+
+            if(!hasRooms) { showEmptyScreen(emptyNotice); }
+            initialLoadDone = true;
+        }
 
         function showEmptyScreen(emptyNotice) {
             const customerListWindow = document.getElementById('customerListWindow');
@@ -680,7 +699,7 @@
             database.ref('chats/' + cleanNum).child('cust_profile').set({
                 name: cleanNum,
                 phone: cleanNum,
-                lastSeen: Date.now() // यहाँ टाइमस्टैम्प सेट किया ताकि डिलीट न हो
+                lastSeen: Date.now() 
             }).then(() => {
                 localStorage.setItem('lastSeen_' + cleanNum, Date.now());
                 selectCustomer("room_" + cleanNum, cleanNum);
@@ -721,7 +740,6 @@
                 timestamp: Date.now()
             };
 
-            // एडमिन प्रोफाइल का टाइमस्टैम्प अपडेट करें
             database.ref('chats/' + actualRoomKey).child('cust_profile').update({
                 lastSeen: Date.now()
             });
@@ -818,7 +836,6 @@
             }
         }, {once: true});
 
-        // 🎤 वॉइस टू टेक्स्ट लॉजिक (एडमिन पैनल के लिए एकदम स्टेबल)
         let adminRecognition;
         let isAdminRecording = false;
 
@@ -855,7 +872,6 @@
             };
         } else {
             document.getElementById('adminMicBtn').style.display = 'none';
-            console.log("यह ब्राउज़र वॉइस टाइपिंग सपोर्ट नहीं करता है।");
         }
 
         function toggleAdminVoiceTyping() {
