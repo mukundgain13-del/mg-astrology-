@@ -7,6 +7,10 @@
     
     <link rel="manifest" href="manifest.json">
 
+    <!-- फायरबेस का लॉगिन सिस्टम (Authentication) चालू करने के लिए ये दो लाइनें जरूरी हैं -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
@@ -110,7 +114,6 @@
         }
         .login-btn:hover { background-color: #008069; }
 
-        /* 📥 मुकुंद जी, आपका पुराना डिज़ाइन बिल्कुल सुरक्षित है */
         .download-app-btn {
             width: 100%;
             padding: 12px;
@@ -172,7 +175,6 @@
         .modal-list li { margin-bottom: 10px; }
         .close-modal-btn { display: block; width: 100%; padding: 12px; background-color: #00a884; color: white; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; text-align: center; }
 
-        /* 🌟 गाइड पॉप-अप की सुंदर स्टाइलिंग */
         .guide-modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
         .guide-content { background-color: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 360px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .guide-title { font-size: 19px; font-weight: bold; color: #005e4e; margin-bottom: 15px; }
@@ -194,7 +196,6 @@
             
             <button class="login-btn" onclick="loginAndGo()">Login या Chat</button>
             
-            <!-- बटन का पुराना डिज़ाइन वैसा ही रहेगा, बस क्लिक करने पर openGuide() चलेगा -->
             <button id="btnDownloadApp" class="download-app-btn" onclick="openGuide()">डाउनलोड ऐप 📥</button>
             <div id="downloadSubText" class="download-sub-text">यहां से डाउनलोड करें</div>
         </div>
@@ -212,7 +213,7 @@
                 <li>🎓 शिक्षा और विदेश योग</li>
                 <li>✨ प्रभावी ज्योतिष उपाय</li>
                 <li>🏠 वास्तु दोष निवारण</li>
-                <li>⚖️ कानूनी विवाद और कोर्ट केस</li>
+                <li>⚖️ कानूनी विवाद और कोर्ट充केस</li>
                 <li>👨‍👩‍👧‍👦 पारिवारिक शांति और गृह क्लेश</li>
                 <li>🧿 नजर दोष और सुरक्षा कवच</li>
                 <li>👶 संतान सुख और भविष्य</li>
@@ -248,7 +249,6 @@
         </div>
     </div>
 
-    <!-- 🌟 नया गाइड पॉप-अप बॉक्स -->
     <div class="guide-modal" id="appGuideModal">
         <div class="guide-content">
             <div class="guide-title">📱 ऐप डाउनलोड (इंस्टॉल) कैसे करें?</div>
@@ -264,7 +264,6 @@
         function openTerms() { document.getElementById('termsModal').style.display = 'flex'; }
         function closeTerms() { document.getElementById('termsModal').style.display = 'none'; }
         
-        // गाइड खोलने और बंद करने का फंक्शन
         function openGuide() { document.getElementById('appGuideModal').style.display = 'flex'; }
         function closeGuide() { document.getElementById('appGuideModal').style.display = 'none'; }
 
@@ -273,9 +272,28 @@
             if(phone === "") { alert("कृपया अपना मोबाइल नंबर दर्ज करें।"); return; }
             var cleanPhone = phone.replace(/[^0-9]/g, "");
             if(cleanPhone.length < 10) { alert("कृपया सही और पूरा 10 अंकों का मोबाइल नंबर लिखें।"); return; }
-            localStorage.setItem('currentCustName', cleanPhone);
-            localStorage.setItem('currentCustPhone', cleanPhone);
-            window.location.href = "chat.html";
+            
+            // 🚀 यहाँ आपका लाइफ-टाइम ताला खोलने वाला नया कोड जोड़ा गया है:
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().signInAnonymously()
+                    .then(() => {
+                        localStorage.setItem('currentCustName', cleanPhone);
+                        localStorage.setItem('currentCustPhone', cleanPhone);
+                        window.location.href = "chat.html";
+                    })
+                    .catch((error) => {
+                        console.error("फायरबेस ताला खोलने में एरर आया: ", error.message);
+                        // अगर कोई गड़बड़ हो तो भी यूजर अंदर जा सके
+                        localStorage.setItem('currentCustName', cleanPhone);
+                        localStorage.setItem('currentCustPhone', cleanPhone);
+                        window.location.href = "chat.html";
+                    });
+            } else {
+                // अगर फायरबेस लोड न हुआ हो तो सीधा अंदर भेजें
+                localStorage.setItem('currentCustName', cleanPhone);
+                localStorage.setItem('currentCustPhone', cleanPhone);
+                window.location.href = "chat.html";
+            }
         }
     </script>
 </body>
