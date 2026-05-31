@@ -6,7 +6,6 @@
     <title>MG ASTROLOGY - Customer Chat</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
-    <!-- 🚀 बैकग्राउंड में लॉगिन बनाए रखने के लिए यह मुख्य ऑथ लाइब्रेरी यहाँ जोड़ी गई है -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 
     <style>
@@ -272,10 +271,10 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // 🚀 यहाँ सेंड बटन का ताला खोलने वाला बैकग्राउंड लॉगिन कोड फिट किया गया है:
+        // 🚀 बैकग्राउंड में लॉगिन शुरू करना
         if (firebase.auth) {
             firebase.auth().signInAnonymously().catch((error) => {
-                console.error("Auth initialization background error:", error.message);
+                console.error("Auth init error:", error.message);
             });
         }
 
@@ -287,7 +286,7 @@
         
         userStatusRef.update({ 
             online: true,
-            lastSeen: Date.now() 
+            lastSeen: Date.now()
         });
 
         database.ref('.info/connected').on('value', (snapshot) => {
@@ -390,11 +389,25 @@
             if(deletedDiv) deletedDiv.remove();
         });
 
+        // 🚀 मैसेज सेंड को ताले के साथ सिंक करने का बिल्कुल सही तरीका
         function sendMessage() {
             const input = document.getElementById('msgInput');
             const text = input.value.trim();
             if(text === "") return;
 
+            // अगर किसी वजह से सेशन सिंक नहीं है तो तुरंत ऑथेंटिकेट करें
+            if (firebase.auth && !firebase.auth().currentUser) {
+                firebase.auth().signInAnonymously().then(() => {
+                    executeSend(text, input);
+                }).catch(() => {
+                    executeSend(text, input); // सेफ साइड फ़ॉलबैक
+                });
+            } else {
+                executeSend(text, input);
+            }
+        }
+
+        function executeSend(text, input) {
             const messageData = {
                 sender: "customer",
                 text: text,
